@@ -1,0 +1,1936 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content"><meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff"><meta name="theme-color" media="(prefers-color-scheme: dark)" content="#141415"><meta name="color-scheme" content="light dark"></head><body>
+<title>Cuestionarios TDAH</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap">
+<style>
+/* Achromatic ledger · open plane: barra lateral sobre el fondo (escritorio) que en el celular se pliega a una barra superior de 48px con menú.
+   Grilla: lateral 256px + lienzo fluido con margen de 32px; contenido de hasta 1040px. Un solo color (--hue) para las respuestas marcadas;
+   el resto de la interfaz va en tinta. Separaciones por borde de 1px, sin sombras en reposo (solo en lo que flota). */
+:root{
+  --ground:#f2f4f7;--surface:#ffffff;--raised:#eceff3;--active:#e8ecf2;
+  --border:#e3e6eb;--rule:#eef0f3;--control:#cfd4db;
+  --text:#0a0a0a;--muted:#5f6670;
+  --primary:#141414;--primary-ink:#ffffff;
+  --hue:#1d5fbf;--hue-ink:#ffffff;--hue-soft:#e3ecf8;
+  --positive:#247b50;--negative:#c4242a;
+  --pill-positive-bg:#dcfae5;--pill-positive-ink:#04250e;
+  --pill-negative-bg:#ffedea;--pill-negative-ink:#831c1e;
+  --pill-warning-bg:#fffbeb;--pill-warning-ink:#92400e;--pill-warning-line:#fde68a;
+  --scrim:rgba(10,12,16,.45);
+  --font:"Geist",Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --radius-card:8px;--radius-control:6px;
+  --side:256px;--gap:12px;--pad:24px;--control-height:36px;
+  --fs-title:24px;--fs-section:16px;--fs-kpi:30px;--fs-body:14px;--fs-small:12px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --ground:#0b0b0c;--surface:#141415;--raised:#1f2022;--active:#232427;
+  --border:#26272a;--rule:#1d1e20;--control:#3b3d41;
+  --text:#f2f2f2;--muted:#a6a8ad;
+  --primary:#f2f2f2;--primary-ink:#0b0b0c;
+  --hue:#7fabf5;--hue-ink:#07132a;--hue-soft:#18243a;
+  --positive:#5cc58a;--negative:#f08c86;
+  --pill-positive-bg:#16291d;--pill-positive-ink:#79d6a1;
+  --pill-negative-bg:#2e1a1a;--pill-negative-ink:#f3a29b;
+  --pill-warning-bg:#2b2213;--pill-warning-ink:#f1c27a;--pill-warning-line:#5a4520;
+  --scrim:rgba(0,0,0,.6);color-scheme:dark}}
+:root[data-theme="dark"]{
+  --ground:#0b0b0c;--surface:#141415;--raised:#1f2022;--active:#232427;
+  --border:#26272a;--rule:#1d1e20;--control:#3b3d41;
+  --text:#f2f2f2;--muted:#a6a8ad;
+  --primary:#f2f2f2;--primary-ink:#0b0b0c;
+  --hue:#7fabf5;--hue-ink:#07132a;--hue-soft:#18243a;
+  --positive:#5cc58a;--negative:#f08c86;
+  --pill-positive-bg:#16291d;--pill-positive-ink:#79d6a1;
+  --pill-negative-bg:#2e1a1a;--pill-negative-ink:#f3a29b;
+  --pill-warning-bg:#2b2213;--pill-warning-ink:#f1c27a;--pill-warning-line:#5a4520;
+  --scrim:rgba(0,0,0,.6);color-scheme:dark}
+
+*{box-sizing:border-box}
+html{-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%;overscroll-behavior-y:none}
+body{margin:0;background:var(--ground);color:var(--text);font-family:var(--font);font-size:var(--fs-body);line-height:1.45;overscroll-behavior-y:none}
+[hidden]{display:none!important}
+h1,h2,h3{margin:0;text-wrap:balance}
+p{margin:0}
+button{font:inherit;color:inherit}
+button,[role="button"],label.check,label.switch{touch-action:manipulation;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+:focus-visible{outline:2px solid var(--hue);outline-offset:2px}
+.num{font-variant-numeric:tabular-nums}
+
+/* ---------- Estructura ---------- */
+.app{display:grid;grid-template-columns:var(--side) minmax(0,1fr);min-height:100dvh}
+.side{position:sticky;top:0;height:100dvh;overflow-y:auto;overscroll-behavior:contain;border-right:1px solid var(--border);
+  display:flex;flex-direction:column;gap:22px;padding:20px 12px calc(16px + env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px))}
+.canvas{min-width:0;display:flex;flex-direction:column}
+main{flex:1;width:100%;max-width:1104px;padding-block:32px 128px;padding-left:max(32px,env(safe-area-inset-left,0px));padding-right:max(32px,env(safe-area-inset-right,0px))}
+
+.brand{display:flex;align-items:center;gap:10px;padding:0 8px}
+.brand svg{flex:none;display:block}
+.brand b{display:block;font-size:15px;font-weight:600;line-height:1.2}
+.brand span{display:block;font-size:var(--fs-small);color:var(--muted)}
+.btn.side-close{display:none}
+
+.fld{display:flex;flex-direction:column;gap:6px;min-width:0}
+.fld>span{font-size:13px;font-weight:500;color:var(--muted)}
+input[type=text],input[type=date],input[type=number]{font:inherit;font-size:16px;height:40px;padding:0 11px;border:1px solid var(--control);border-radius:var(--radius-control);background:var(--surface);color:var(--text);width:100%;min-width:0}
+input:focus{outline:2px solid var(--hue);outline-offset:-1px}
+.pt{display:grid;gap:12px;padding:0 8px}
+
+.nav-g{display:grid;gap:2px}
+.nav-l{font-size:var(--fs-small);color:var(--muted);padding:0 8px 6px;user-select:none;-webkit-user-select:none;cursor:default}
+.side .brand,.side .fld>span{user-select:none;-webkit-user-select:none}
+.nav-i{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:32px;padding:0 10px;border:0;border-radius:var(--radius-control);background:transparent;cursor:pointer;text-align:left;font-size:14px}
+.nav-i[aria-current="page"]{background:var(--active);font-weight:500}
+.nav-i .nm{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nav-l.sep{padding-top:14px}
+.nav-i .c{font-size:var(--fs-small);color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.nav-i.full .c{color:var(--positive)}
+.side-foot{margin-top:auto;display:grid;gap:8px;padding:0 8px}
+.file-status{font-size:var(--fs-small);color:var(--muted)}
+.file-status.warn{color:var(--pill-warning-ink)}
+
+/* Barra superior y pestañas (celular) */
+.mtop{display:none}
+
+/* ---------- Controles ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:var(--control-height);padding:0 14px;border-radius:var(--radius-control);border:1px solid var(--control);background:var(--surface);font-weight:500;font-size:14px;cursor:pointer;line-height:1.2;text-align:center;transition:transform .1s ease-out,background-color .12s}
+.btn.pri{background:var(--primary);border-color:var(--primary);color:var(--primary-ink)}
+.btn.txt{border-color:transparent;background:transparent;padding:0 6px;color:var(--muted)}
+.btn.wide{width:100%}
+.btn:active{transform:scale(.97)}
+.btn:disabled{opacity:.6;cursor:progress}
+.btn small{font-weight:400;color:var(--muted);font-size:var(--fs-small)}
+.btn.pri small{color:inherit;opacity:.75}
+@media (hover:hover) and (pointer:fine){
+  .btn:not(:disabled):hover{border-color:var(--text)}
+  .btn.pri:not(:disabled):hover{opacity:.88}
+  .btn.txt:not(:disabled):hover{color:var(--text)}
+  .nav-i:hover{background:var(--active)}
+  .opt:hover,.big:hover{border-color:var(--hue)}
+  .chip:hover{border-color:var(--text)}
+}
+.seg{display:inline-flex;padding:3px;gap:2px;background:var(--raised);border-radius:8px}
+.seg button{border:0;background:transparent;min-height:32px;padding:0 14px;border-radius:6px;cursor:pointer;font-size:14px;color:var(--muted)}
+.seg button{border:1px solid transparent}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--text);font-weight:500;border-color:var(--border)}
+.switch{display:inline-flex;align-items:center;gap:8px;font-size:14px;cursor:pointer;color:var(--muted)}
+.switch input{width:18px;height:18px;margin:0;accent-color:var(--primary)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--control);background:var(--surface);border-radius:999px;min-height:36px;padding:0 14px;font-size:14px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--primary);border-color:var(--primary);color:var(--primary-ink)}
+.chip:active{transform:scale(.97)}
+
+/* ---------- Encabezado de cada pantalla ---------- */
+.panel{display:grid;gap:16px}
+.head{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:flex-end;justify-content:space-between}
+.head .ttl{font-size:var(--fs-title);font-weight:600;letter-spacing:-.01em;line-height:1.2}
+.head .sub{margin-top:4px;font-size:15px;color:var(--muted)}
+.head .sub b{color:var(--text);font-weight:500}
+.toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px}
+details.instr{border:1px solid var(--border);border-radius:var(--radius-card);background:var(--surface);padding:12px 16px}
+details.instr summary{cursor:pointer;font-weight:500}
+details.instr p{margin-top:8px;color:var(--muted);max-width:72ch}
+.kbd{font-size:13px;color:var(--muted)}
+.kbd kbd{font-family:inherit;font-size:12px;border:1px solid var(--control);border-bottom-width:2px;border-radius:4px;padding:0 5px;background:var(--surface);color:var(--text)}
+@media (hover:none){.kbd{display:none}}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-card)}
+.inf{padding:16px 20px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:16px}
+
+/* ---------- Lista de ítems ---------- */
+.items{overflow:hidden}
+.sec-h{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:14px 20px 8px;font-weight:600;font-size:15px;border-top:1px solid var(--border)}
+.sec-h:first-child{border-top:0}
+.sec-h small{font-weight:400;font-size:var(--fs-small);color:var(--muted)}
+.item{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:8px 16px;align-items:center;padding:10px 20px;border-top:1px solid var(--rule);scroll-margin:96px 0 120px}
+.sec-h+.item,.items>.item:first-child{border-top-color:transparent}
+.item.active{background:var(--active)}
+.n{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:500;font-variant-numeric:tabular-nums;color:var(--muted);border:1px dashed var(--control)}
+.item.done .n{border:1px solid transparent;background:var(--raised);color:var(--text)}
+.item.active .n{border:1px solid var(--text);color:var(--text)}
+.txt{font-size:15px;min-width:0}
+.opts{display:grid;grid-template-columns:repeat(var(--n),var(--w,76px));gap:4px}
+.opts.stack{grid-column:2/-1;grid-template-columns:minmax(0,1fr);gap:4px}
+.item.ch{grid-template-columns:28px minmax(0,1fr)}
+.opt.row{flex-direction:row;justify-content:flex-start;gap:12px;text-align:left;padding:8px 12px;font-size:14px;min-height:40px}
+.opt.row .k{font-size:12px;min-width:18px;font-weight:600;color:var(--muted)}
+.lead{padding:12px 20px 4px;font-weight:600}
+.lead-one{font-size:14px;color:var(--muted);margin-bottom:6px}
+.ex{margin:8px 0 0;padding-left:18px;color:var(--muted)}
+.ex li+li{margin-top:2px}
+.opt{min-height:40px;padding:4px;border:1px solid var(--control);border-radius:var(--radius-control);background:var(--surface);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:13px;line-height:1.15;text-align:center;transition:background-color .1s,border-color .1s,color .1s,transform .1s ease-out}
+.opt .k{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.opt:active{transform:scale(.96)}
+.opt.on{background:var(--hue);border-color:var(--hue);color:var(--hue-ink);font-weight:500}
+.opt.on .k{color:inherit;opacity:.8}
+@media (hover:none){.opt:not(.row) .k{display:none}}
+
+/* ---------- De a una ---------- */
+.one{padding:24px;display:grid;gap:20px}
+.one-top{display:flex;justify-content:space-between;gap:12px;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.one-bar{height:4px;border-radius:2px;background:var(--raised);overflow:hidden;margin-top:-12px}
+.one-bar i{display:block;height:100%;background:var(--text);transition:width .2s ease-out}
+.one-body{display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,400px);gap:20px 40px;align-items:start}
+.one-side{display:grid;gap:16px}
+.one-txt{font-size:22px;font-weight:500;line-height:1.35;letter-spacing:-.005em;max-width:36ch}
+.one-opts{display:grid;gap:8px}
+.big{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:56px;padding:0 18px;border:1px solid var(--control);border-radius:8px;background:var(--surface);cursor:pointer;font-size:16px;text-align:left;transition:background-color .1s,border-color .1s,color .1s,transform .1s ease-out}
+.big .k{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.big.ch{justify-content:flex-start;gap:14px;font-size:15px;line-height:1.35;padding:10px 16px}
+.big.ch .k{min-width:20px;font-weight:600}
+.big:active{transform:scale(.98)}
+.big.on{background:var(--hue);border-color:var(--hue);color:var(--hue-ink);font-weight:500}
+.big.on .k{color:inherit;opacity:.8}
+.one-nav{display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between}
+.one-done{display:grid;gap:12px;justify-items:start}
+
+/* ---------- Preguntas finales ---------- */
+.final{padding:20px;display:grid;gap:20px}
+.final h3{font-size:var(--fs-section);font-weight:600}
+.fq{display:grid;gap:10px}
+.fq>p{max-width:70ch}
+.hint{font-size:13px;color:var(--muted)}
+.checks{display:flex;flex-wrap:wrap;gap:8px}
+.check{display:inline-flex;align-items:center;gap:8px;min-height:40px;border:1px solid var(--control);border-radius:var(--radius-control);padding:0 12px;cursor:pointer;background:var(--surface)}
+.check input{width:18px;height:18px;margin:0;accent-color:var(--primary)}
+.age{display:flex;align-items:center;gap:8px}
+.age input{width:96px}
+.foot{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px}
+
+/* ---------- Barra inferior ---------- */
+.dock{position:fixed;left:var(--side);right:0;bottom:0;z-index:20;background:var(--surface);border-top:1px solid var(--border);padding-bottom:env(safe-area-inset-bottom,0px)}
+.dock-in{max-width:1104px;display:flex;align-items:center;gap:16px;padding-block:10px;padding-left:max(32px,env(safe-area-inset-left,0px));padding-right:max(32px,env(safe-area-inset-right,0px))}
+.dock-prog{flex:1;min-width:0;display:grid;gap:6px}
+.dock-l{display:flex;gap:8px;align-items:baseline;font-size:14px;min-width:0}
+.dock-l b{font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dock-l span{color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
+.bar{height:4px;border-radius:2px;background:var(--raised);overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--text);transition:width .25s ease-out}
+
+/* ---------- Resultados ---------- */
+.res{display:grid;gap:16px}
+.rc{padding:20px;display:grid;gap:16px;min-width:0}
+.rc-h{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;justify-content:space-between}
+.rc-h h2{font-size:var(--fs-section);font-weight:600}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.pill{flex:none;white-space:nowrap;font-size:12px;font-weight:500;padding:2px 9px;border-radius:999px;background:var(--pill-positive-bg);color:var(--pill-positive-ink)}
+.pill.warn{background:var(--pill-warning-bg);color:var(--pill-warning-ink)}
+.pill.neutral{background:var(--raised);color:var(--muted)}
+.btn.sm{min-height:32px;padding:0 10px;font-size:13px}
+.lnk.strong{text-decoration:none;font-weight:600;font-size:15px;padding:0}
+.ql{display:grid}
+.qr{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:6px 16px;align-items:center;padding:10px 0;border-top:1px solid var(--rule)}
+.qr:first-child{border-top:0;padding-top:0}
+.qn{display:grid;gap:2px;min-width:0}
+.qr .acts{display:flex;gap:6px}
+.miss{font-size:13px;color:var(--pill-warning-ink)}
+.note{padding:10px 12px;border-radius:var(--radius-control);font-size:14px}
+.note.crit{background:var(--pill-negative-bg);color:var(--pill-negative-ink)}
+.note.warn{background:var(--pill-warning-bg);color:var(--pill-warning-ink);border:1px solid var(--pill-warning-line)}
+.lnk{background:none;border:0;padding:0 2px;cursor:pointer;text-decoration:underline;font-weight:500;color:inherit;font-variant-numeric:tabular-nums}
+.dl{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px 24px;align-items:center}
+.dl+.dl{border-top:1px solid var(--rule);padding-top:14px}
+.dl b{font-weight:500;display:block}
+.dl .acts{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:1px solid var(--border);border-radius:var(--radius-card)}
+.kpi{padding:14px 16px;min-width:0}
+.kpi+.kpi{border-left:1px solid var(--border)}
+.kpi span{display:block;font-size:13px;color:var(--muted)}
+.kpi b{display:block;font-size:var(--fs-kpi);font-weight:400;line-height:1.2;font-variant-numeric:tabular-nums;margin-top:2px}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+th,td{padding:9px 8px;text-align:left;vertical-align:middle;border-bottom:1px solid var(--rule)}
+th{font-size:12px;font-weight:400;color:var(--muted)}
+th:first-child,td:first-child{padding-left:0}
+th:last-child,td:last-child{padding-right:0}
+td.r,th.r{text-align:right;white-space:nowrap}
+tr.tot td{font-weight:600}
+tr.sub td:first-child{padding-left:16px;color:var(--muted)}
+.meter{position:relative;height:6px;border-radius:3px;min-width:80px;background:var(--raised)}
+.meter i{position:absolute;left:0;top:0;bottom:0;background:var(--hue);border-radius:3px}
+.fa{display:grid;gap:6px}
+.privacy{font-size:13px;color:var(--muted)}
+
+/* ---------- Lo que flota ---------- */
+.modal{position:fixed;inset:0;z-index:60;background:var(--scrim);display:grid;place-items:center;padding:16px}
+.modal-card{background:var(--surface);border-radius:12px;padding:20px;max-width:440px;width:100%;display:grid;gap:12px;box-shadow:0 24px 60px rgba(0,0,0,.28)}
+.modal-card h2{font-size:18px;font-weight:600}
+.modal-card p{color:var(--muted)}
+.modal-actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(88px + env(safe-area-inset-bottom,0px));z-index:70;background:var(--primary);color:var(--primary-ink);padding:10px 16px;border-radius:8px;font-size:14px;max-width:min(92vw,520px);box-shadow:0 10px 30px rgba(0,0,0,.22)}
+.toast.err{background:var(--negative);color:#fff}
+.drop{position:fixed;inset:12px;z-index:80;border:2px dashed var(--hue);border-radius:16px;background:color-mix(in srgb,var(--surface) 88%,transparent);display:grid;place-items:center;font-size:18px;font-weight:500;pointer-events:none}
+
+/* ---------- Tablet y celular ---------- */
+@media (max-width:1100px){
+  .opts:not(.stack){grid-template-columns:repeat(var(--n),calc(var(--w,76px) * .86))}
+}
+@media (max-width:899px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  .side{position:fixed;inset:0;z-index:50;height:100dvh;background:var(--ground);border-right:0;padding:calc(14px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));display:none}
+  body.menu .side{display:flex}
+  .btn.side-close{display:inline-flex;margin-left:auto}
+  .brand{padding:0}
+  .pt,.side-foot,.nav-l{padding-left:0;padding-right:0}
+  .nav-i{min-height:44px}
+  body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:31;background:var(--surface)}
+  .mtop{display:flex;align-items:center;gap:10px;position:sticky;top:env(safe-area-inset-top,0px);z-index:30;height:52px;background:var(--surface);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(10px,env(safe-area-inset-right,0px))}
+  .mtop .who{flex:1;min-width:0;border:0;background:none;padding:0;text-align:left;cursor:pointer}
+  .mtop .who b{display:block;font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .mtop .who span{display:block;font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  main{padding-block:20px 128px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+  .dock{left:0}
+  .dock-in{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+  .item{grid-template-columns:28px minmax(0,1fr);padding:12px 16px}
+  .opts:not(.stack){grid-column:1/-1;grid-template-columns:repeat(var(--n),minmax(0,1fr))}
+  .opt{min-height:48px;font-size:13px}
+  .opts.lg .opt{font-size:12px;padding:4px 2px}
+  .opts.stack{grid-column:1/-1}
+  .opt.row{min-height:44px}
+  .qr{grid-template-columns:minmax(0,1fr) auto}
+  .qr .acts{grid-column:1/-1}
+  .sec-h{padding:14px 16px 8px}
+  .one{padding:16px;gap:16px}
+  .one-body{grid-template-columns:minmax(0,1fr);gap:16px}
+  .one-txt{font-size:19px;min-height:4.05em}
+  .big{min-height:52px}
+  .head .ttl{font-size:22px}
+  .sub-p{display:none}
+  .v-one .panel>.one{order:1}
+  .v-one .panel>.instr{order:2}
+  .v-one .panel>.inf,.v-one .panel>.final,.v-one .panel>.foot{order:3}
+  .inf{grid-template-columns:minmax(0,1fr);padding:16px}
+  .final{padding:16px}
+  .rc{padding:16px}
+  .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .kpi:nth-child(3){border-left:0}
+  .kpi:nth-child(n+3){border-top:1px solid var(--border)}
+  .dl{grid-template-columns:minmax(0,1fr)}
+  .dl .acts{justify-content:flex-start}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+
+<div class="app">
+  <aside class="side" id="side" aria-label="Menú">
+    <div class="brand">
+      <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><rect x="2" y="15" width="3" height="7" rx="1" fill="currentColor" opacity=".35"/><rect x="7" y="12" width="3" height="10" rx="1" fill="currentColor" opacity=".35"/><rect x="12" y="9" width="3" height="13" rx="1" fill="currentColor" opacity=".35"/><rect x="17" y="6" width="3" height="16" rx="1" fill="var(--hue)"/><rect x="22" y="3" width="2.5" height="19" rx="1" fill="currentColor" opacity=".35"/></svg>
+      <div><b>Cuestionarios TDAH</b><span>16 del Excel · 2 BAARS-IV</span></div>
+      <button type="button" class="btn side-close" data-act="menu-close">Cerrar</button>
+    </div>
+    <div class="pt">
+      <label class="fld"><span>Paciente</span><input type="text" id="pt-name" autocomplete="off" autocapitalize="words" enterkeyhint="done" placeholder="Nombre y apellido"></label>
+      <label class="fld"><span>Fecha</span><input type="date" id="pt-date"></label>
+    </div>
+    <nav class="nav-g" aria-label="Cuestionarios" id="nav"></nav>
+    <div class="side-foot">
+      <div class="nav-l">Archivo de avance</div>
+      <button type="button" class="btn pri wide" data-act="save-progress">Guardar avance</button>
+      <button type="button" class="btn wide" data-act="open-progress">Abrir avance guardado</button>
+      <p class="file-status" id="file-status"></p>
+      <button type="button" class="btn txt" data-act="new">Nuevo paciente</button>
+    </div>
+  </aside>
+
+  <div class="canvas">
+    <header class="mtop">
+      <svg width="22" height="22" viewBox="0 0 26 26" aria-hidden="true"><rect x="2" y="15" width="3" height="7" rx="1" fill="currentColor" opacity=".35"/><rect x="7" y="12" width="3" height="10" rx="1" fill="currentColor" opacity=".35"/><rect x="12" y="9" width="3" height="13" rx="1" fill="currentColor" opacity=".35"/><rect x="17" y="6" width="3" height="16" rx="1" fill="var(--hue)"/><rect x="22" y="3" width="2.5" height="19" rx="1" fill="currentColor" opacity=".35"/></svg>
+      <button type="button" class="who" data-act="menu-open"><b id="m-title">SCL-90</b><span id="m-sub">Sin nombre</span></button>
+      <button type="button" class="btn" data-act="menu-open">Cuestionarios</button>
+    </header>
+    <main id="main"></main>
+  </div>
+</div>
+
+<div class="dock" id="dock">
+  <div class="dock-in">
+    <div class="dock-prog">
+      <div class="dock-l"><b id="dock-name">SCL-90-R</b><span id="dock-count">0 de 90</span></div>
+      <div class="bar"><i id="dock-bar"></i></div>
+    </div>
+    <button type="button" class="btn pri" id="dock-btn">Siguiente</button>
+  </div>
+</div>
+
+<input type="file" id="file-in" accept=".json,.xlsx,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden>
+<div class="drop" id="drop" hidden>Soltá el archivo de avance para abrirlo</div>
+<div class="modal" id="modal" hidden>
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modal-t">
+    <h2 id="modal-t"></h2>
+    <p id="modal-p"></p>
+    <div class="modal-actions">
+      <button type="button" class="btn" id="modal-no">Cancelar</button>
+      <button type="button" class="btn pri" id="modal-ok">Aceptar</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<script>
+(function(){
+'use strict';
+
+/* ---------- Contenido de los cuestionarios ----------
+   Fuente: Catalogo_Cuestionarios_TDAH (hojas del Excel CuestionariosTDAH.xlsx) y los PDF del BAARS-IV.
+   Los textos se transcriben como figuran en la fuente. Excepciones, informadas aparte:
+   - ASI-3 ítem 12: se quitó el resto de codificación "_xDCAB_" que aparece pegado a "un" en la exportación del Excel.
+   - HS / HS mikulic: la columna "Rta" del Excel es auxiliar y no se muestra como opción.
+   - EQ: la columna "x" del Excel es auxiliar y no se muestra como opción. */
+const L=s=>s.trim().split('\n').map(t=>t.trim()).filter(Boolean);
+function G(s){const out=[];s.trim().split('\n').forEach(line=>{line=line.trim();if(!line)return;if(line[0]==='#')out.push({t:line.slice(1).trim(),o:[]});else{const p=line.indexOf('|');out[out.length-1].o.push([line.slice(0,p),line.slice(p+1)]);}});return out;}
+
+const INST=[
+{id:'scl',name:'SCL-90',title:'SCL-90-R',group:'excel',
+ instr:['A continuación se presenta una lista de problemas que tiene la gente. Lea cada uno de ellos y marque su respuesta con una "x" en la casilla correspondiente, pensando en cómo se sintió, en qué medida ese problema le ha preocupada o molestado durante la última semana (7 días). No hay respuestas buenas o malas, todas sirven. No deje frases sin responder.'],
+ opts:['Nada','Muy poco','Poco','Bastante','Mucho'],
+ items:L(`
+Dolores de cabeza
+Nerviosismo
+Pensamientos desagradables que no se iban de mi cabeza
+Sensación de mareo o desmayo
+Falta de interés en relaciones sexuales
+Criticar a los demás
+Sentir que otro puede controlar mis pensamientos
+Sentir que otros son culpables de lo que me pasa
+Tener dificultad para memorizar cosas
+Estar preocupado/a por mi falta de ganas para hacer algo
+Sentirme enojado/a, malhumorado/a
+Dolores en el pecho
+Miedo a los espacios abiertos o las calles
+Sentirme con muy pocas energías
+Pensar en quitarme la vida
+Escuchar voces que otras personas no oyen
+Temblores en mi cuerpo
+Perder la confianza en la mayoría de las personas
+No tener ganas de comer
+Llorar por cualquier cosa
+Sentirme incómodo/a con personas del otro sexo
+Sentirmme atrapada/o o encerrado/a
+Asustarme de repente sin razón alguna
+Explotar y no poder controlarme
+Tener miedo a salir solo/a de mi casa
+Sentirme culpable por cosas que ocurren
+Dolores en la espalda
+No poder terminar las cosas que empecé a hacer
+Sentirme solo/a
+Sentirme triste
+Preocuparme demasiado por todo lo que pasa
+No tener interés por nada
+Tener miedos
+Sentirme herido en mis sentimientos
+Creer que la gente sabe qué estoy pensando
+Sentir que no me comprenden
+Sentir que no caigo bien a la gente, que no les gusto
+Tener que hacer las cosas muy despacio para estar seguro/a de que están bien hechas
+Mi corazón late muy fuerte, se acelera
+Náuseas o dolor de estómago
+Sentirme inferior a los demás
+Calambres en manos, brazos o piernas
+Sentir que me vigilan o que hablan de mí
+Tener problemas para dormirme
+Tener que controlar una o más veces lo que hago
+Tener dificultades para tomar decisiones
+Tener miedo de viajar en tren, ómnibus o subterráneos
+Tener dificultades para respirar bien
+Ataques de frío o de calor
+Tener que evitar acercarme a algunos lugares o actividades porque me dan miedo
+Sentir que mi mente queda en blanco
+Hormigueos en alguna parte del cuerpo
+Tener un nudo en la garganta
+Perder las esperanzas en el futuro
+Dificultades para concentrarme en lo que estoy haciendo
+Sentir flojedad, debilidad, en partes de mi cuerpo
+Sentirme muy nervioso/a, agitado/a
+Sentir mis brazos y piernas muy pesados
+Pensar que me estoy por morir
+Comer demasiado
+Sentirme incómodo/a cuando me miran o hablan de mí
+Tener ideas, pensamientos que no son los míos
+Necesitar golpear o lastimar a alguien
+Despertarme muy temprano por la mañana sin necesidad
+Repetir muchas veces algo que hago: contar, lavarme, tocar cosas
+Dormir con problemas, muy inquieto/a
+Necesitar romper o destrozar cosas
+Tener ideas, pensamientos que los demás no entienden
+Estar muy pendiente de lo que los demás puedan pensar de mí
+Sentirme incómodo/a en lugares donde hay mucha gente
+Sentir que todo me cuesta mucho esfuerzo
+Tener ataques de mucho miedo o de pánico
+Sentirme mal si estoy comiendo o bebiendo en público
+Meterme muy seguido en discusiones
+Ponerme nervioso/a cuando estoy solo/a
+Sentir que los demás no me valoran como merezco
+Sentirme solo/a aún estando con gente
+Estar inquieto/a; no poder estar sentado/a sin moverme
+Sentirme un/a inútil
+Sentir que algo malo me va a pasar
+Gritar o tirar cosas
+Miedo a desmayarme en medio de la gente
+Sentir que se aprovechan de mí si los dejo
+Pensar cosas sobre el sexo que me molestan
+Sentir que debo ser castigado/a por mis pecados
+Tener imágenes y pensamientos que me dan miedo
+Sentir que algo anda mal en mi cuerpo
+Sentirme alejado/a de las demás personas
+Sentirme culpable
+Pensar que en mi cabeza hay algo que no funciona bien`)},
+
+{id:'bdi',name:'BDI II',title:'BDI II',group:'excel',type:'choice',
+ instr:['Este cuestionario consiste en 21 grupos de frases. Lea con cuidado cada grupo de frases y luego seleccione con una “x” una frase en cada grupo que mejor describa la manera en que usted se ha sentido durante las últimas dos semanas, incluyendo el día de hoy. Si hay varias frases dentro de un grupo que parecen aplicarse a su situación con la misma relevancia, seleccione el número más alto de ese grupo. Asegúrese de no escoger más de una frase por cada grupo de frases, incluyendo el número 16 (Cambios en el Patrón de Sueño) o el número 18 (Cambios de Apetito).'],
+ groups:G(`
+# Tristeza
+0|No me siento triste.
+1|Me siento triste la mayor parte del tiempo.
+2|Estoy triste todo el tiempo.
+3|Me siento tan triste e infeliz que no puedo soportarlo.
+# Pesimismo
+0|No me siento desanimado(a) acerca del futuro.
+1|Me siento más desanimado(a) acerca de mi futuro que de costumbre.
+2|No espero que las cosas me salgan bien.
+3|Siento que mi futuro no tiene esperanza y que las cosas solamente van a empeorar.
+# Fracaso
+0|No me siento como un fracaso.
+1|He fracasado más de lo que debería.
+2|Mirando a mi pasado, veo muchos fracasos.
+3|Siento que como persona, soy un fracaso total.
+# Falta de placer
+0|Obtengo tanto placer como antes de las cosas que disfruto.
+1|No disfruto de las cosas tanto como antes.
+2|Obtengo muy poco placer de las cosas que solía disfrutar.
+3|No puedo obtener ningún placer de las cosas que antes disfrutaba.
+# Sentimientos de culpa
+0|No me siento particularmente culpable.
+1|Me siento culpable por muchas cosas que he hecho o debería haber hecho y no las hice.
+2|Me siento bastante culpable la mayor parte del tiempo.
+3|Me siento culpable todo el tiempo.
+# Sentimientos de castigo
+0|No siento que estoy siendo castigado(a) por la vida.
+1|Siento que quizá esté siendo castigado(a) por la vida.
+2|Espero ser castigado(a) por la vida.
+3|Siento que estoy siendo castigado(a) por la vida.
+# Auto-desprecio
+0|Me siento igual que siempre acerca de mi persona.
+1|He perdido la confianza en mí mismo(a).
+2|Me siento decepcionado(a) conmigo mismo(a).
+3|No me gusta quién soy.
+# Auto-crítica
+0|No me critico o me culpo a mí mismo(a) más que de costumbre.
+1|Me critico a mí mismo(a) más de lo que solía hacerlo.
+2|Me critico a mí mismo(a) por todos mis defectos.
+3|Me culpo a mí mismo(a) por todo lo malo que sucede.
+# Pensamientos o deseos suicidas
+0|No tengo ningún pensamiento de matarme.
+1|He tenido pensamientos de matarme, pero no lo haría.
+2|Quisiera matarme.
+3|Me mataría si tuviera la oportunidad.
+# Llanto
+0|No lloro más de lo que solía llorar.
+1|Lloro más de lo que solía llorar.
+2|Lloro por cualquier cosa.
+3|Siento que aunque quiero llorar, no puedo.
+# Agitación
+0|No estoy más inquieto(a) o tenso(a) que de costumbre.
+1|Me siento más inquieto(a) o tenso(a) que de costumbre.
+2|Estoy tan inquieto(a) o agitado(a) que me es difícil quedarme quieto.
+3|Estoy tan inquieto(a) o agitado(a) que tengo que estar moviéndome constantemente o haciendo algo.
+# Falta de interés
+0|No he perdido el interés en otras personas o actividades.
+1|Ahora estoy menos interesado(a) en otras personas o actividades que antes.
+2|He perdido mucho interés en otras personas o actividades.
+3|Se me hace difícil tratar de interesarme en cualquier cosa.
+# Indecisión
+0|Tomo mis decisiones tan bien como siempre.
+1|Se me hace más difícil tomar decisiones que de costumbre.
+2|Ahora que tengo mucha más dificultad en tomar decisiones que de costumbre.
+3|Tengo dificultad en tomar cualquier decisión.
+# Falta de valor personal
+0|No siento que soy inservible.
+1|No me considero que sea tan valioso y útil como antes.
+2|Me siento inservible en comparación con otras personas.
+3|Me siento completamente inservible.
+# Falta de energía
+0|Tengo tanta energía como siempre.
+1|Tengo menos energía de la que solía tener.
+2|No tengo suficiente energía para hacer muchas cosas.
+3|No tengo suficiente energía para hacer nada.
+# Cambios en el patrón de sueño
+0|No he experimentado ningún cambio en mi patrón de sueño.
+1a|Duermo algo más que de costumbre.
+1b|Duermo algo menos que de costumbre.
+2a|Duermo mucho más que de costumbre.
+2b|Duermo mucho menos que de costumbre.
+3a|Duermo todo el día.
+3b|Despierto 1-2 horas más temprano y no puedo volver a dormir.
+# Irritabilidad
+0|No estoy más irritado(a) que de costumbre.
+1|Estoy más irritado(a) que de costumbre.
+2|Estoy mucho más irritado(a) que de costumbre.
+3|Estoy irritado(a) todo el tiempo.
+# Cambios de apetito
+0|No he experimentado ningún cambio en mi apetito.
+1a|Tengo un poco menos de apetito que de costumbre.
+1b|Tengo un poco más de apetito que de costumbre.
+2a|Tengo mucho menos apetito que de costumbre.
+2b|Tengo mucho más apetito que de costumbre.
+3a|No tengo nada de apetito.
+3b|Tengo muchas ganas de comer todo el tiempo.
+# Dificultades de concentración
+0|Me puedo concentrar tan bien como siempre.
+1|No me puedo concentrar tan bien como acostumbraba.
+2|Es difícil mantener mi mente en algo por mucho tiempo.
+3|Me doy cuenta que no puedo concentrarme en nada.
+# Cansancio o fatiga
+0|No me canso o fatigo más que de costumbre.
+1|Me canso o fatigo más fácilmente que de costumbre.
+2|Estoy muy cansado(a) o fatigado(a) para hacer muchas de las cosas que antes hacía.
+3|Estoy demasiado fatigado o cansado para hacer la mayoría de las cosas que solía hacer.
+# Falta de interés en el sexo
+0|Recientemente no he notado ningún cambio en mi deseo sexual.
+1|Estoy menos interesado(a) en el sexo que antes.
+2|Ahora tengo mucho menos interés en el sexo que antes.
+3|He perdido el interés en el sexo por completo.`)},
+
+{id:'bai',name:'BAI',title:'BAI',group:'excel',
+ instr:['A continuación, hay una lista de síntomas frecuentes de ansiedad. Lea por favor, cada uno de ellos atentamente. Indique con una "x" el grado de molestia que le ha provocado cada síntoma durante los últimos 7 días.'],
+ opts:['Ninguno','Leve','Moderado','Severo'],
+ items:L(`
+Insensibilidad física o cosquilleo
+Acaloramiento
+Debilidad en las piernas
+Incapacidad para relajarme
+Temor a que suceda lo peor
+Mareos o vértigos
+Aceleración del ritmo cardíaco
+Sensación de inestabilidad
+Sensación de estar atemorizado/a
+Nerviosismo
+Sensación de ahogo
+Temblor de manos
+Temblor generalizado o estremecimiento
+Miedo a perder el control
+Dificultad para respirar
+Miedo a morir
+Estar asustado/a
+Indigestión o malestar de abdomen
+Sensación de que me voy a desmayar
+Rubor facial
+Sudor`)},
+
+{id:'hs',name:'HS',title:'HS',group:'excel',
+ instr:['Por favor, señale con una "x" si las siguientes afirmaciones se ajustan o no a su situación personal.'],
+ opts:['Verdadero','Falso'],
+ items:L(`
+Espero el futuro con esperanza y entusiasmo
+Puedo darme por vencido, renunciar, ya que no puedo hacer mejor las cosas por mí mismo
+Cuando las cosas van mal me alivia saber que las cosas no pueden permanecer tiempo así
+No puedo imaginar cómo será mi vida dentro de 10 años
+Tengo bastante tiempo para llevar a cabo las cosas que quisiera poder hacer
+En eI futuro, espero conseguir lo que me pueda interesar
+Mi futuro me parece oscuro
+Espero más cosas buenas de la vida que lo que la gente suele conseguir por término medio
+No logro hacer que las cosas cambien, y no existen razones para creer que pueda en el futuro
+Mis pasadas experiencias me han preparado bien para mi futuro
+Todo lo que puedo ver por delante de mí es más desagradable que agradable
+No espero conseguir lo que realmente deseo
+Cuando miro hacia el futuro, espero que seré más feliz de lo que soy ahora
+Las cosas no marchan como yo quisiera
+Tengo una gran confianza en el futuro
+Nunca consigo lo que deseo, por lo que es absurdo desear cualquier cosa
+Es muy improbable que pueda lograr una satisfacción real en el futuro
+El futuro me parece vago e incierto
+Espero más bien épocas buenas que malas
+No merece la pena que intente conseguir algo que desee, porque probablemente no lo lograré`)},
+
+{id:'hsm',name:'HS mikulic',title:'HS',group:'excel',
+ instr:['Este cuestionario contiene 20 frases. Por favor, lea cada frase atentamente. Si una frase describe su actitud durantela semana pasada, incluyendo el día de hoy, marque con una "x" en el casillero “Verdadero” para indicar que es cierto. Si la frase no describe su actitud, marque con una "x" en el casillero “Falso” para indicar que no es así para usted. Asegúrese de leer cada frase con mucho cuidado.'],
+ opts:['Verdadero','Falso'],
+ items:L(`
+Miro hacia el futuro con esperanza y entusiasmo
+Mejor me doy por vencido ya que nada puedo hacer para mejorar mi vida
+Cuando las cosas andan mal, me ayuda saber que no será así para siempre
+No me puedo imaginar lo que será mi vida de aquí a diez años
+Tengo el tiempo suficiente para lograr las cosas que quiero hacer
+En el futuro, yo espero tener éxito en las cosas más importantes para mí
+Mi futuro parece oscuro
+He tenido muy buena suerte en la vida y espero recibir más cosas buenas de la vida aún
+Nada me ha salido bien hasta ahora y no hay razón para esperar algo mejor del futuro
+Mis experiencias del pasado me han preparado bien para el futuro
+Lo que puedo ver en mi futuro es desagradable más que agradable
+No espero conseguir lo que realmente deseo
+Pensando en el futuro espero sentirme más feliz de lo que me siento ahora
+Las cosas nunca me salen como yo quiero que me salgan
+Tengo mucha fe en el futuro
+Como nunca consigo lo que quiero no tiene sentido desear algo
+Es muy díficil que yo encuentre alguna satisfacción en el futuro
+El futuro me parece inseguro e incierto
+Puedo esperar mas tiempos buenos que malos
+No tiene sentido tratar de lograr lo que quiero, probablemente no lo voy a conseguir`)},
+
+{id:'asi3',name:'ASI-3',title:'ASI-3',group:'excel',
+ instr:['Conteste marcando con una "x" en la columna que mejor refleje su experiencia con lo que se indica en cada uno de los enunciados. Si algo de lo que se dice no lo ha sentido o experimentado nunca (por ejemplo: desmayarse en publico), conteste como usted cree que se sentiría si realmente le hubiera ocurrido.'],
+ opts:['Nada o casi nada','Un poco','Bastante','Mucho','Muchísimo'],
+ items:L(`
+Para mí es importante no dar la impresión de estar nervioso/a
+Cuando no puedo mantener mi mente concentrada en una tarea, siento la preocupación de que podría estar volviendome loco/a
+Me asusto cuando mi corazón late de forma rápida
+Cuando siento malestar en el estómago me preocupa estar realmente enfermo/a
+Me asusto cuando soy incapaz de mantener mi mente concentrada en una tarea
+Cuando tiemblo en presencia de otras personas, me da miedo lo que puedan pensar de mi
+Cuando siento opresión en el pecho, me asusta no poder respirar bien
+Cuando siento dolor en el pecho, me preocupa que vaya a darme un ataque cardíaco
+Me preocupa que otras personas noten mi ansiedad
+Cuando tengo la sensación de que las cosas no son reales, me preocupa que pueda estar mentalmente enfermo/a
+Tengo miedo de sonrojarme delante de la gente
+Cuando noto que mi corazón da un salto o late de forma irregular, me preocupa que algo grave me esté ocurriendo
+Cuando comienzo a sudar en una situación social, me da miedo que la gente piense negativamente de mi
+Cuando mis pensamientos parecen acelerarse, me preocupa que pueda volverme loco/a
+Cuando siento opresión en la garganta, me preocupa que pueda atragantarme y morir
+Cuando me resulta dificil pensar con claridad, me preocupa que me esté ocurriendo algo grave
+Pienso que me resultaría horrible si me desmayase en público
+Cuando mi mente se queda en blanco, me procupa que me este ocurriendo algo terriblemente malo`)},
+
+{id:'pauto',name:'P AUTO',title:'INVENTARIO DE PENSAMIENTOS AUTOMÁTICOS',group:'excel',
+ instr:['A continuación encontrará una lista de pensamientos que suele presentar las personas ante diversas situaciones. Se trata de que usted valore la frecuencia con que suele pensarlos, siguiendo la escala que se presenta a continuación:','0 = Nunca pienso en eso','1 = Algunas veces pienso en eso','2 = Bastantes veces lo pienso','3 = Con mucha frecuencia lo pienso'],
+ opts:['Nunca pienso en eso','Algunas veces pienso en eso','Bastantes veces lo pienso','Con mucha frecuencia lo pienso'],codes:['0','1','2','3'],
+ items:L(`
+No puedo soportar ciertas cosas que me pasan
+Solamente me pasan cosas malas
+Todo lo que hago me sale mal
+Sé que piensan mal de mi
+¿Y si tengo alguna enfermedad grave?
+Soy inferior a la gente en casi todo
+Si otros cambiaran su actitud yo me sentiría mejor
+No hay derecho a que me traten así
+Si me siento triste es porque soy un enfermo mental
+Mis problemas dependen de los que me rodean
+Soy un desastre como persona
+Yo tengo la culpa de todo lo que me pasa
+Debería de estar bien y no tener estos problemas
+Sé que tengo la razón y no me entienden
+Aunque ahora sufra, algún día tendré mi recompensa
+Es horrible que me pase esto
+Mi vida es un continuo fracaso
+Siempre tendré este problema
+Sé que me están mintiendo y engañando
+¿Y si me vuelvo loco y pierdo la cabeza?
+Soy superior a la gente en casi todo
+Yo soy responsable del sufrimiento de los que me rodean
+Si me quisieran de verdad no me tratarían así
+Me siento culpable, y es porque he hecho algo malo
+Si tuviera más apoyo no tendría estos problemas
+Alguien que conozco es un imbécil
+Otros tiene la culpa de lo que me pasa
+No debería de cometer estos errores
+No quiere reconocer que estoy en lo cierto
+Ya vendrán mejores tiempos
+Es insoportable, no puedo aguantar más
+Soy incompetente e inútil
+Nunca podré salir de esta situación
+Quieren hacerme daño
+¿Y si les pasa algo malo a las personas a quienes quiero?
+La gente hace las cosas mejor que yo
+Soy una victima de mis circunstancias
+No me tratan como deberían hacerlo y me merezco
+Si tengo estos síntomas es porque soy un enfermo
+Si tuviera mejor situación económica no tendría estos problemas
+Soy un neurótico
+Lo que me pasa es un castigo que merezco
+Debería recibir mas atención y cariño de otros
+Tengo razón, y voy a hacer lo que me da la gana
+Tarde o temprano me irán las cosas mejor`)},
+
+{id:'upps',name:'UPPS-P',title:'UPPS-P',group:'excel',
+ instr:['Por favor, indica tu grado de conformidad con cada una de las siguientes frases siguiendo la escala que se presenta a continuación:','1 = Rotundamente de acuerdo','2 = Algo de acuerdo','3 = Algo en desacuerdo','4 = Rotundamente en desacuerdo'],
+ opts:['Rotundamente de acuerdo','Algo de acuerdo','Algo en desacuerdo','Rotundamente en desacuerdo'],codes:['1','2','3','4'],
+ items:L(`
+Normalmente pienso cuidadosamente antes de hacer cualquier cosa
+Cuando estoy realmente animado, no suelo pensar en las consecuencias de mis acciones
+A veces me gusta hacer cosas que dan un poco de miedo
+Cuando estoy irritado suelo actuar sin pensar
+En general me gusta asegurarme de llevar las cosas a buen término
+Mi manera de pensar es normalmente meticulosa y centrada
+En el acaloramiento de una discusión, con frecuencia digo cosas de las que luego me arrepiento
+Termino lo que empiezo
+Disfruto mucho corriendo riesgos
+Cuando estoy rebosante de alegría, siento que no puedo evitar “tirar la casa por la ventana”
+Casi siempre termino los proyectos que empiezo
+Con frecuencia empeoro las cosas porque actúo sin pensar cuando estoy irritado
+Normalmente tomo mis decisiones mediante un cuidadoso razonamiento
+Generalmente busco experiencias y sensaciones nuevas y excitantes
+Cuando estoy realmente contento por algo, tiendo a hacer cosas que pueden tener malas consecuencias
+Soy una persona que siempre deja el trabajo hecho
+Cuando me siento rechazado, frecuentemente digo cosas de las que luego me arrepiento
+Me gustan experiencias y sensaciones nuevas y excitantes, aunque causen un poco de miedo y sean poco convencionales
+Antes de implicarme en una nueva situación me gusta informarme sobre qué puedo esperar de ella
+Cuando estoy muy feliz, veo bien sucumbir a mis deseos o darme algún capricho de más`)},
+
+{id:'dex',name:'DEX-Sp',title:'CUESTIONARIO DISEJECUTIVO DEX-SP',group:'excel',
+ instr:['Este cuestionario hace referencia a dificultades que la gente experimenta algunas veces. Le rogamos que lea las siguientes frases y señale con una "x" sobre la respuesta apropiada. Por favor, responda a todas las preguntas.'],
+ opts:['Nunca','Ocasionalmente','Algunas veces','Con bastante frecuencia','Muy frecuentemente'],
+ items:L(`
+Tengo problemas para entender lo que otros quieren decir, aunque digan las cosas claramente.
+Actúo sin pensar, haciendo lo primero que me pasa por la cabeza.
+A veces hablo sobre cosas que no han ocurrido en realidad, aunque yo creo que sí han pasado.
+Tengo dificultad para pensar cosas con antelación o para planificar el futuro.
+A veces me pongo demasiado excitado con ciertas cosas y en esos momentos me paso un poco de la raya.
+Mezclo algunos episodios con otros, y me confundo al intentar ponerlos por orden.
+Tengo dificultades para ser consciente de la magnitud de mis problemas y soy poco realista respecto a mi futuro.
+Estoy como aletargado, o no me entusiasmo con las cosas.
+Hago o digo cosas vergonzosas cuando estoy con otras personas.
+Tengo muchas ganas de hacer ciertas cosas en un momento dado, pero al momento ni me preocupo de ellas.
+Tengo dificultad para mostrar mis emociones
+Me enfado mucho por cosas insignificantes.
+Me resulta difícil dejar de decir o hacer repetidamente ciertas cosas, una vez que he empezado a hacerlas.
+Tiendo a ser bastante activo, y no puedo quedarme quieto por mucho tiempo.
+Me resulta difícil cortarme de hacer algo incluso aunque sepa que no debería hacerlo.
+Digo una cosa pero después no actúo en consecuencia, no la cumplo.
+Me resulta difícil centrarme en algo, y me distraigo con facilidad.
+Tengo dificultades para tomar decisiones, o decidir lo que quiero hacer.
+No me entero, o no me interesa, lo que opinen otros sobre mi comportamiento.
+No me preocupo sobre cómo tengo que comportarme en ciertas situaciones.`)},
+
+{id:'asrs',name:'ASRS',title:'ASRS 1.1',group:'excel',
+ instr:['Marque con una "x" la casilla que mejor describa la manera en que se ha sentido y comportado en los últimos 6 meses.'],
+ opts:['Nunca','Rara vez','A veces','A menudo','Muy a menudo'],
+ items:L(`
+¿Con que frecuencia tiene usted dificultad para acabar los detalles finales de un proyecto, una vez que ha terminado con las partes difíciles?
+¿Con que frecuencia tiene usted dificultad para ordenar las cosas cuando está realizando una tarea que requiere organización?
+¿Con que frecuencia tiene usted problemas para recordar citas u obligaciones?
+Cuando tiene que realizar una tarea que requiere pensar mucho, ¿con que frecuencia evita o retrasa empezarla?
+¿Con que frecuencia agita o retuerce las manos o los pies cuando tiene que permanecer sentado por mucho tiempo?
+¿Con que frecuencia se siente demasiado activo e impulsado a hacer cosas, como si lo empujase un motor?`)},
+
+{id:'asrsarg',name:'ASRS-Arg',title:'ASRS 1.1',group:'excel',
+ instr:['Marque con una "x" la casilla que mejor describa la manera en que se ha sentido y comportado en los últimos 6 meses.'],
+ opts:['Nunca','Rara vez','A veces','A menudo','Muy a menudo'],
+ items:L(`
+¿Con que frecuencia tiene usted dificultad para acabar los detalles finales de un proyecto, una vez que ha terminado con las partes difíciles?
+¿Con que frecuencia tiene usted dificultad para ordenar las cosas cuando está realizando una tarea que requiere organización?
+¿Con que frecuencia tiene usted problemas para recordar citas u obligaciones?
+Cuando tiene que realizar una tarea que requiere pensar mucho, ¿con que frecuencia evita o retrasa empezarla?
+¿Con que frecuencia agita o retuerce las manos o los pies cuando tiene que permanecer sentado por mucho tiempo?
+¿Con que frecuencia se siente demasiado activo e impulsado a hacer cosas, como si lo empujase un motor?
+¿Con qué frecuencia comete errores por descuido cuando tiene que trabajar en un proyecto aburrido o difícil?
+¿Con qué frecuencia le cuesta mantener la atención cuando está trabajando en algo aburrido o repetitivo?
+¿Con qué frecuencia tiene dificultades para concentrarse en lo que le están diciendo aunque le estén hablando directamente a usted?
+¿Con qué frecuencia pierde cosas o tiene dificultad en encontrarlas en su casa o su trabajo?
+¿Con qué frecuencia se distrae por la actividad o ruido a su alrededor?
+¿Con qué frecuencia se levanta de su lugar en reuniones o en otras situaciones en las que se espera que se quede sentado?
+¿Con qué frecuencia se siente inquieto o no se puede quedar tranquilo?
+¿Con qué frecuencia tiene dificultades para desconectarse y disfrutar de la tranquilidad cuando tiene tiempo para usted?
+¿Con qué frecuencia nota en situaciones sociales que está hablando demasiado?
+16. Cuando está charlando, ¿con que frecuencia nota que está terminando las oraciones de las personas con quienes habla sin dejarlos terminar a ellos?
+¿Con qué frecuencia le cuesta esperar su turno en situaciones en las que hace falta ir por turno?
+¿Con qué frecuencia interrumpe a los demás cuando están ocupados?`)},
+
+{id:'wurs',name:'WURS',title:'WENDER-UTAH',group:'excel',extra:'wurs',
+ instr:['Marque con una "x" en la columna más adecuada (solo una contestación por fila).'],lead:'De niño, yo era (o tenía):',
+ opts:['No, o muy poco','Poco','Algo','Bastante','Mucho'],
+ items:L(`
+activo, inquieto, siempre por hacer cosas
+miedoso
+problemas para concentrarme, me distraía facilmente
+me preocupaba en exceso
+nervioso
+no prestaba atención, estaba a mis cosas
+de los que se enfadaba con facilidad
+tímido
+de rabieta fácil
+de los que no acababa las cosas
+terco
+desanimado
+incauto, con facilidad para hacer gamberradas o travesuras
+no sacaba nada de provecho, insatisfecho con la vida
+desobediente con los padres, descarado, "fresco"
+baja autoestima
+irritable
+con facilidad para hacer amigos y disfrutar con los amigos
+desorganizado
+con altibajos en mi ánimo
+con mal carácter
+popular, con muchos amigos
+bien organizado, hacendoso
+impulsivo, hacía las cosas sin pensar
+tendencia a ser inmaduro
+con sentimientos siempre de culpa
+con facilidad para perder el control
+con tendencia a hacer cosas sin pensar mucho
+no tener amistad con otros niños, perder fácilmente los amigos
+torpe, no participaba en actividades deportivas
+miedo a perder el control
+bueno en deportes
+poco aspecto femenino (solamente para mujeres), muy varonil (solamente para hombres)
+con ganas siempre de estar fuera de casa
+metido en peleas
+chinchando a otros niños
+un líder
+perezoso por las mañanas
+seguido en lo que hacia por otros niños
+de los que tenía dificultad para ver los puntos de vista de otros
+problemas con los profesores, mandado al despacho del director
+problemas con la policía
+dolores de cabeza
+dolor de estómago
+estreñimiento
+diarrea
+alergias a alimentos
+otras alergias
+mojar la cama (incontinencia)
+en general un buen estudiante
+en general un mal estudiante
+me costó aprender a leer
+dificultad para leer
+dificultad para escribir algunas letras
+dificultad para escribir
+dificultad con las matemáticas o con los números
+escribía con mala letra
+capaz de leer bien pero no me gustaba leer mucho
+no progresaba adecuadamente
+repetidor
+expulsado del colegio`)},
+
+{id:'wursarg',name:'WURS-Arg',title:'WENDER-UTAH',group:'excel',extra:'wurs',
+ instr:['A continuación, se enumerarán una serie de preguntas que deberá contestar teniendo en cuenta lo que recuerda de cuando era niño (antes de los 12 años).'],
+ opts:['Nada o casi nada','Un poco','Algo','Mucho'],
+ items:L(`
+Activo, no paraba nunca
+Problemas de concentración, me distraía con facilidad
+Ansioso, preocupado
+Nervioso, inquieto
+Poco atento, "en las nubes"
+Mucho temperamento, me enojaba con facilidad
+Explosiones de genio, rabietas
+Problemas para terminar las cosas que empezaba
+Testarudo, cabezota
+Imprudente, temerario, hacia travesuras
+Desobediente con mis padres, rebelde, contestador
+Irritable
+Descuidado, me organizaba mal
+Cambios de humor frecuentes: alegre, triste…
+Enojado
+Impulsivo, hacía las cosas sin pensar
+Tendencia a ser inmaduro
+Sentimientos de culpa, remordimientos
+Perdía el control de mí mismo
+Tendencia a ser o a actuar irracionalmente
+Me metía en peleas
+Molestaba a otros niños
+Me dejaba llevar demasiado por los demás
+Dificultad para ponerme en el lugar de otros
+Problemas con las autoridades en la escuela`)},
+
+{id:'edi',name:'EDI II',title:'EDI II',group:'excel',
+ instr:['Por favor, al completar el cuestionario tenga en cuenta que los ítems tienen diversas opciones de respuesta y deberá elegir SÓLO UNA, considere que se trata de una escala gradual. Marque con una "x" la opción que corresponda.'],
+ opts:['Nunca o casi nunca','A veces','Generalmente','Siempre o casi siempre'],
+ items:L(`
+Como dulces e hidratos de carbono sin preocuparme
+Creo que mi panza es demasiado grande
+Quisiera volver a sentirme seguro/a como cuando era chico/a
+Me pongo a comer cuando estoy molesto/a
+Me lleno excesivamente de comida
+Me gustaría volver a ser más chico/a (de edad)
+Pienso en hacer dieta
+Me asusto cuando tengo sentimientos muy fuertes
+Creo que mis muslos son demasiado grandes
+Siento que no sirvo para nada
+Me siento muy culpable cuando como en exceso
+Creo que mi panza tiene un tamaño normal
+En mi familia sólo se consideran como buenos los resultados sobresalientes
+La etapa más feliz de la vida es la niñez
+Soy abierto/a con mis sentimientos
+Me aterroriza aumentar de peso
+Confío en los demás
+Me siento solo/a en el mundo
+Estoy conforme con el cuerpo que tengo
+En general, siento que puedo controlar las cosas que pasan en mi vida
+Me cuesta darme cuenta de lo que estoy sintiendo (miedo, alegría, rabia, etc.)
+Preferiría ser adulto/a a ser un/a niño/a
+Me resulta fácil comunicarme con los demás
+Desearía ser otra persona
+Exagero o doy demasiada importancia al peso
+Puedo darme cuenta claramente de lo que siento (miedo, alegría, rabia, etc.)
+Siento que no hago nada bien
+He llegado a comer y comer sin poder parar
+De niño/a me esforcé por no decepcionar a mis padres y maestros
+Tengo amigos/as de mucha confianza
+Me gusta la forma de mi cola
+El deseo de estar más delgado/a me preocupa
+No sé qué pasa dentro de mí
+Me cuesta expresar mis emociones a los demás
+Las exigencias de la vida adulta son excesivas
+Detesto cuando no soy el/la mejor en algo
+Me siento seguro/a de mi mismo/a
+Pienso en comer en exceso
+Me siento feliz de no ser más un niño/a
+Me cuesta darme cuenta de si tengo hambre o no
+Tengo una mala opinión sobre mí mismo/a
+Creo que puedo lograr las metas que me propongo
+Mis padres tienen altas expectativas sobre mi desempeño
+Me preocupa no poder controlar mis sentimientos
+Creo que mis caderas son demasiado anchas
+Como con moderación delante de los demás y excesivamente cuando estoy solo/a
+Me siento hinchado/a o lleno/a después de una comida normal
+Tengo la sensación de que la gente es más feliz durante la infancia
+Si aumento un kilo, me preocupa que pueda seguir aumentando
+Siento que soy una persona valiosa
+Cuando estoy molesto/a, no sé si estoy triste, asustado/a o enojado/a
+Creo que debo hacer las cosas perfectamente o no hacerlas
+Tengo la idea de intentar vomitar para perder peso
+Necesito mantener cierta distancia con la gente (me siento incómodo/a si alguien se acerca demasiado)
+Creo que el tamaño de mis muslos es normal
+Me siento emocionalmente vacío/a
+Puedo hablar sobre pensamientos o sentimientos personales
+La mejor época de la vida es cuando llegás a ser adulto
+Creo que mi cola es demasiado grande
+Tengo sentimientos que no puedo identificar del todo
+Como o bebo a escondidas
+Creo que mis caderas son de tamaño normal
+Me propongo metas sumamente elevadas
+Cuando estoy mal, molesto/a, me preocupa empezar a comer
+Las personas que más me agradan terminan desilusionándome
+Me avergüenzan mis debilidades
+Algunas personas dirían que soy emocionalmente inestable
+Me gustaría dominar las necesidades de mi cuerpo
+Me siento cómodo/a en la mayoría de las situaciones grupales
+Digo cosas impulsivamente de las que después me arrepiento
+Me esfuerzo mucho por hacer cosas que me den placer
+Tengo que cuidarme de mi tendencia a abusar de las drogas
+Soy sociable con la mayoría de la gente
+Los vínculos que tengo me hacen sentir atrapado/a
+Me siento fortalecido/a espiritualmente cuando me privo de ciertas cosas
+Los demás son capaces de entender mis problemas más importantes
+Me es imposible sacar de mi cabeza ciertos pensamientos extraños
+Comer por placer es un signo de debilidad
+Suelo tener ataques de rabia o furia
+Creo que la gente me da el reconocimiento que merezco
+Tengo que cuidarme de mi tendencia a abusar del alcohol
+Creo que el descanso es una pérdida de tiempo
+Algunas personas dirían que me enojo fácilmente
+Siento que fracaso en todo
+Cambio fácilmente de estado de ánimo
+Me avergüenzo de las necesidades de mi cuerpo
+Me gusta más estar solo/a que en compañía de otras personas
+El sufrimiento nos convierte en mejores personas
+Sé que la gente me quiere
+Siento la necesidad de causarme daño a mí mismo/a o a otros
+Creo que me conozco bien a mí mismo/a`)},
+
+{id:'tas',name:'TAS',title:'TAS',group:'excel',
+ instr:['Por favor lea atentamente cada una de las siguientes veinte frases. Marque su respuesta con una "x" en una de las tres columnas, teniendo en cuenta lo que usted siente o piensa. Trate de ser lo más sincero/a posible.'],
+ opts:['Totalmente de acuerdo','Ni de acuerdo ni en desacuerdo','Totalmente en desacuerdo'],
+ items:L(`
+A menudo estoy confundido sobre qué emoción estoy sintiendo.
+Me es difícil encontrar las palabras correctas para expresar lo que siento.
+Tengo sensaciones en mi cuerpo que ni los médicos logran entender.
+Soy capaz de describir mis sentimientos con facilidad.
+Prefiero analizar los problemas en vez de describirlos o comunicarlos.
+Cuando me siento mal, no sé si estoy triste, asustado o enojado.
+A menudo estoy confundido con las sensaciones que noto en mi cuerpo.
+Prefiero dejar que las cosas pasen en vez de analizar por qué sucedieron así.
+Tengo sentimientos que no puedo identificar del todo.
+Es muy importante estar en contacto y sentir emociones o sentimientos.
+Me es difícil describir o explicar lo que siento sobre la gente.
+La gente me pide que explique con más detalles mis sentimientos.
+Muchas veces no sé lo que está pasando dentro mío.
+A menudo no sé por qué estoy enojado.
+Prefiero hablar con la gente de sus actividades diarias más que de sus sentimientos.
+Prefiero ver en la televisión programas de entretenimiento, superficiales, en vez de complicados dramas psicológicos.
+Es difícil para mí revelar mis sentimientos más profundos, aún a mis amigos íntimos.
+Puedo sentirme cercano a alguien, comprender sus sentimientos, aún en momentos de silencio.
+Me es útil examinar mis sentimientos para resolver problemas personales.
+Buscar significados ocultos en las películas o juegos impide disfrutarlos y divertirse con ellos.`)},
+
+{id:'eq',name:'EQ',title:'EQ',group:'excel',
+ instr:['Abajo hay una lista con frases. Por favor lea cuidadosamente cada una y juzgue en qué medida está usted de acuerdo o desacuerdo, marcando con una "x" círculo su respuesta en la columna adecuada. No hay respuestas correctas ni incorrectas ni engañosas.','PARA QUE ESTA ESCALA TENGA VALIDEZ TODAS LAS RESPUESTAS DEBEN ESTAR CONTESTADAS.'],
+ examples:['Me enfadaría si no pudiera escuchar música todos los días.','Prefiero hablar con mis amigos por teléfono que escribirles cartas.','No me interesa viajar a diferentes partes del mundo','Prefiero leer que bailar.'],
+ opts:['Totalmente de acuerdo','Bastante de acuerdo','Un poco de acuerdo','Totalmente en desacuerdo'],
+ items:L(`
+Me puedo dar cuenta fácilmente si alguien quiere entrar en una conversación.
+Prefiero los animales a las personas.
+Intento seguir las tendencias y modas actuales
+Cuando otros no me entienden a la primera me cuesta explicarles las cosas que para mi son fáciles de entender.
+Sueño la mayoría de las noches.
+Realmente me agrada cuidar de otras personas.
+Intento resolver mis propios problemas en lugar de discutirlos con otras personas.
+Me resulta difícil saber qué debo hacer en situaciones sociales.
+Cuando mejor estoy es al principio de la mañana.
+La gente a menudo me dice que defiendo con demasiada vehemencia mi punto de vista en una discusión.
+No me preocupa demasiado llegar tarde a una cita con un amigo.
+La amistad y las relaciones sociales son tan difíciles para mí que tiendo a no darles importancia.
+Nunca violaría la ley, aunque se tratase de algo sin importancia.
+A menudo me resulta difícil juzgar si alguien es maleducado o educado.
+En una conversación suelo centrarme en mis pensamientos en lugar de lo que puede estar pensando el otro.
+Prefiero los chistes sencillos más que los de ironía y sarcasmo.
+Vivo la vida pensando en el presente en lugar de en el futuro.
+Cuando era niño me gustaba cortar gusanos para ver qué ocurría.
+Capto rápidamente cuando alguien dice algo pero quiere decir otra cosa
+Suelo tener fuertes opiniones acerca de cuestiones relacionadas con la moral.
+Me cuesta entender por qué algunas cosas enfadan tanto a las personas.
+Me resulta fácil ponerme en el lugar de otra persona.
+Creo que los buenos modales es la cosa más importante que los padres pueden enseñar a sus hijos.
+Me gusta hacer las cosas espontáneamente.
+Soy bueno prediciendo como se sentirá alguien.
+Puedo reconocer en seguida cuando, en un grupo de gente, alguien se siente raro o incómodo.
+Si digo algo y alguien se siente ofendido pienso que es su problema y no el mío.
+Si alguien me pregunta si me gusta su corte de pelo yo respondo con la verdad incluso si no me gusta.
+No siempre puedo entender por qué alguien se puede sentir ofendido por un comentario.
+La gente a menudo me dice que soy impredecible.
+Disfruto siendo el centro de atención en una reunión social.
+Ver a la gente llorar no me pone triste.
+Me gusta discutir acerca de política.
+Soy muy directo, lo que mucha gente considera grosero incluso si lo hago sin esa intención
+No suelo encontrar las situaciones sociales confusas.
+La gente me dice que soy bueno comprendiendo como se siente y qué están pensando.
+Cuando hablo con la gente tiendo a hablar de sus experiencias más que de las mías.
+Me pone triste ver un animal sufriendo.
+Soy capaz de tomar decisiones sin la influencia de los sentimientos de los demás.
+No me puedo relajar hasta hacer la última cosa que tenía planeada para ese día.
+Puedo fácilmente decir si alguien está interesado o aburrido con lo que estoy diciendo.
+Me pongo triste si veo en las noticias gente sufriendo.
+Mis amigos suelen contarme sus problemas porque dicen que soy muy comprensivo.
+Puedo sentir cuando estoy siendo poco discreto sin necesidad de que me lo digan.
+Suelo empezar nuevos hobbies pero me aburro rápidamente de ellos y empiezo otra cosa.
+La gente a veces me dice que he ido demasiado lejos con las bromas.
+Me pondría muy nervioso subirme a una montaña rusa grande.
+La gente me dice a menudo que soy insensible, aunque no entiendo siempre por qué.
+Cuando hay alguien nuevo en el grupo considero que son los demás los que tienen que esforzarse para incluirle.
+Normalmente no me mantengo emocionalmente estable cuando veo una película.
+Me gusta ser organizado en la vida diaria y a menudo hago listas con las actividades que tengo que hacer.
+Sintonizo rápida e intuitivamente con cómo se siente otra persona.
+No me gusta asumir riesgos.
+En seguida me doy cuenta de que quiere hablar la otra persona.
+Puedo darme cuenta si alguien enmascara sus verdaderos sentimientos.
+Antes de tomar una decisión siempre considero los pros y los contras.
+No necesito pensar conscientemente las normas sociales de cada situación.
+Soy bueno prediciendo que hará la gente
+Tiendo a involucrarme emocionalmente en los problemas de mis amigos.
+Normalmente respeto el punto de vista del otro, aunque no lo comparta.`)},
+
+{id:'bi',name:'BAARS-IV Infancia',title:'BAARS-IV: Otro informante — Síntomas en la infancia',group:'baars',extra:'baars',
+ instr:['Se le pide que describa el comportamiento infantil de alguien a quien conoce bien. ¿Con qué frecuencia hizo eso? ¿La persona experimenta cada uno de estos problemas? Para los primeros 18 elementos, marque la opción que mejor describa su comportamiento cuando era niño (ENTRE 5 Y 12 AÑOS DE EDAD). Luego responda las dos preguntas restantes.'],
+ opts:['Nunca o casi nunca','A veces','Frecuentemente','Muy frecuentemente'],codes:['1','2','3','4'],
+ sections:[{n:'Sección 1 · Inatención',from:1,to:9},{n:'Sección 2 · Hiperactividad',from:10,to:14},{n:'Sección 3 · Impulsividad',from:15,to:18}],
+ items:L(`
+No prestaba atención a los detalles o cometía errores por descuido en sus trabajos u otras actividades.
+Tenía dificultades para mantener la atención en tareas o en actividades divertidas.
+No escuchaba cuando se le hablaba directamente.
+No seguía las instrucciones y no terminaba las tareas o actividades rutinarias.
+Tenía dificultad en organizar tareas y actividades.
+Evitaba, no le gustaba o se mostraba reacio a participar en tareas que requería un esfuerzo mental sostenido.
+Perdía cosas necesarias para las tareas o actividades.
+Se distraía fácilmente con estímulos extraños o pensamientos irrelevantes.
+Era olvidadizo de las actividades diarias.
+Movía sus manos o pies o se retorcía en el asiento.
+Dejaba su asiento en el aula o en otras situaciones en las que se espera que permanezca sentado.
+Se movía excesivamente o se sentía inquieto o encerrado.
+Tenía dificultad para participar tranquilamente en actividades de ocio (se sentía incómodo, hablaba en voz alta o era ruidoso).
+Estaba “en movimiento” o actuaba como si “lo impulsara un motor” (o él/ella sentía que debe estar ocupado o haciendo algo siempre).
+Hablaba excesivamente (en situaciones sociales).
+Respondía antes que se hayan completado las preguntas, terminaba las frases de otros o se precipitaba al hablar.
+Tenía dificultad en esperar su turno.
+Interrumpía o se entrometía en conversaciones o actividades sin permiso o se hacía cargo de lo que otros estaban haciendo.`)},
+
+{id:'ba',name:'BAARS-IV Actualidad',title:'BAARS-IV: Otro informante — Síntomas en la actualidad',group:'baars',extra:'baars',
+ instr:['Se le pide que describa el comportamiento de alguien a quien conoce bien. ¿Con qué frecuencia esa persona experimenta cada uno de estos problemas? Para los primeros 27 elementos, marque la opción que mejor describa el comportamiento de la persona DURANTE LOS ÚLTIMOS 6 MESES. Luego responda las tres preguntas restantes.'],
+ opts:['Nunca o casi nunca','A veces','Frecuentemente','Muy frecuentemente'],codes:['1','2','3','4'],
+ sections:[{n:'Sección 1 · Inatención',from:1,to:9},{n:'Sección 2 · Hiperactividad',from:10,to:14},{n:'Sección 3 · Impulsividad',from:15,to:18},{n:'Sección 4 · Tiempo cognitivo lento',from:19,to:27}],
+ items:L(`
+No presta atención a los detalles o comete errores por descuido en el trabajo u otras actividades.
+Tiene dificultades para mantener la atención en tareas o en actividades de esparcimiento.
+No escucha cuando se le habla directamente.
+No sigue las instrucciones y no termina los trabajos o actividades rutinarias..
+Tiene dificultad en organizar tareas y actividades.
+Evita, no le gusta o se muestra reacio a participar en tareas que requieren un esfuerzo mental sostenido.
+Pierde cosas necesarias para las tareas o actividades.
+Se distrae fácilmente con estímulos extraños o pensamientos irrelevantes.
+Es olvidadizo de las actividades diarias.
+Mueve sus manos o pies o se retuerce en el asiento.
+Deja su asiento en el aula o en otras situaciones en las que se espera que permanezca sentado.
+Se mueve excesivamente o se siente inquieto o encerrado.
+Tiene dificultad para participar tranquilamente en actividades de ocio (se siente incómodo, habla en voz alta o es ruidoso).
+Está “en movimiento” o actúa como si “lo impulsara un motor” (o él/ella siente que debe estar ocupado o haciendo algo siempre).
+Habla excesivamente (en situaciones sociales).
+Responde preguntas antes que se hayan completado termina las frases de otros o se apura al hablar.
+Tiene dificultad en esperar su turno.
+Interrumpe o se entromete en conversaciones o actividades sin permiso o se hace cargo de lo que otros están haciendo.
+Es propenso/a soñar despierto/a cuando debería estar concentrado/a en algo o trabajando.
+Tiene dificultad para mantenerme alerta o despierto/a en situaciones aburridas.
+Se confunde fácilmente.
+Se aburro fácilmente.
+Es Distraído/a o está "en las nubes".
+Es lento/a, más cansado/a que los demás.
+Poco activo/a o con menos energía que los demás.
+Se mueve lentamente, sin prisa.
+Parece que no procesa la información tan rápido o de manera tan precisa como los demás.`)}
+];
+const BY={};INST.forEach(x=>{BY[x.id]=x;x.type=x.type||'scale';});
+const IDS=INST.map(x=>x.id);
+const nItems=x=>x.type==='choice'?x.groups.length:x.items.length;
+const itemText=(x,i)=>x.type==='choice'?x.groups[i].t:x.items[i];
+/* Opciones de un ítem: {c: código que se muestra y se usa con el teclado, l: texto} */
+function optsOf(x,i){
+  if(x.type==='choice')return x.groups[i].o.map(p=>({c:p[0],l:p[1]}));
+  return x.opts.map((l,j)=>({c:x.codes?x.codes[j]:String(j+1),l}));
+}
+const AREAS=['Escuela','Hogar','Trabajo','Relaciones sociales'];
+const RELS=['Madre','Padre','Hermano','Hermana','Otros'];
+
+/* ---------- Utilidades ---------- */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
+const fmtDate=s=>{if(!s)return '—';const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(s);return m?m[3]+'/'+m[2]+'/'+m[1]:s;};
+const RM=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const slug=s=>String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^A-Za-z0-9]+/g,'_').replace(/^_+|_+$/g,'').slice(0,60);
+const plural=(n,a,b)=>n+' '+(n===1?a:b);
+
+/* ---------- Estado ---------- */
+const KEY='cuestionarios-tdah-v1',APP_ID='cuestionarios-tdah',DATA_SHEET='_datos_app',FMT=3;
+const coarse=!!(window.matchMedia&&window.matchMedia('(pointer: coarse)').matches);
+function freshX(){return {bi:{informant:'',relation:'',other:'',impaired:null,areas:[]},ba:{informant:'',relation:'',other:'',impaired:null,onset:'',areas:[]},wurs:{edad:'',sexo:''},wursarg:{edad:'',sexo:''}};}
+function fresh(ui){
+  const r={};INST.forEach(x=>{r[x.id]=Array(nItems(x)).fill(null);});
+  return {fmt:FMT,patient:{name:'',date:today()},r,x:freshX(),meta:{fileSavedAt:null,changes:0},
+    ui:Object.assign({tab:'scl',auto:true,view:coarse?'one':'list'},ui||{})};
+}
+function cleanX(id,src){
+  const f=freshX()[id];if(!src||typeof src!=='object')return f;
+  Object.keys(f).forEach(p=>{
+    if(p==='areas')f.areas=Array.isArray(src.areas)?AREAS.filter(a=>src.areas.indexOf(a)>=0):[];
+    else if(p==='impaired')f.impaired=src.impaired==='Sí'||src.impaired==='No'?src.impaired:null;
+    else if(p==='sexo')f.sexo=src.sexo==='V'||src.sexo==='M'?src.sexo:'';
+    else if(p==='relation')f.relation=RELS.indexOf(src.relation)>=0?src.relation:'';
+    else f[p]=src[p]==null?'':String(src[p]);
+  });
+  return f;
+}
+/* Valida un estado leído del navegador o de un archivo. Acepta también el formato anterior (solo SCL y BAARS). */
+function normalize(o){
+  if(!o||typeof o!=='object')return null;
+  const f=fresh();let ok=false;
+  if(o.r&&typeof o.r==='object'){
+    INST.forEach(x=>{const a=o.r[x.id];if(Array.isArray(a)&&a.length===nItems(x)){f.r[x.id]=a.map((v,i)=>Number.isInteger(v)&&v>=0&&v<optsOf(x,i).length?v:null);ok=true;}});
+    if(o.x&&typeof o.x==='object')Object.keys(f.x).forEach(id=>{f.x[id]=cleanX(id,o.x[id]);});
+  }else{
+    [['scl',0],['bi',1],['ba',1]].forEach(p=>{const id=p[0],off=p[1],s=o[id],x=BY[id];
+      if(s&&Array.isArray(s.a)&&s.a.length===nItems(x)){f.r[id]=s.a.map(v=>Number.isInteger(v)&&v-off>=0&&v-off<x.opts.length?v-off:null);ok=true;if(id!=='scl')f.x[id]=cleanX(id,s);}});
+  }
+  if(!ok)return null;
+  if(o.patient&&typeof o.patient==='object'){f.patient.name=String(o.patient.name||'');f.patient.date=String(o.patient.date||'')||today();}
+  if(o.meta&&typeof o.meta==='object')f.meta={fileSavedAt:o.meta.fileSavedAt||null,changes:+o.meta.changes||0};
+  if(o.ui&&typeof o.ui==='object'){if(BY[o.ui.tab]||o.ui.tab==='res')f.ui.tab=o.ui.tab;f.ui.auto=o.ui.auto!==false;if(o.ui.view==='one'||o.ui.view==='list')f.ui.view=o.ui.view;}
+  return f;
+}
+function load(){try{const raw=localStorage.getItem(KEY);return raw?normalize(JSON.parse(raw)):null;}catch(e){return null;}}
+let S=load()||fresh();
+let saveT=null;
+function save(){clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}},150);}
+function touch(){S.meta.changes=(S.meta.changes||0)+1;save();paintFileStatus();}
+const active={};IDS.forEach(id=>{active[id]=0;});
+const answered=id=>S.r[id].filter(v=>v!=null).length;
+const missingOf=id=>{const m=[];S.r[id].forEach((v,i)=>{if(v==null)m.push(i);});return m;};
+function extrasMissing(id){if(BY[id].extra!=='wurs')return [];const e=S.x[id],m=[];if(!String(e.edad).trim())m.push('Edad');if(!e.sexo)m.push('Sexo');return m;}
+const complete=id=>answered(id)===nItems(BY[id])&&!extrasMissing(id).length;
+function started(id){if(answered(id))return true;const e=S.x[id];if(!e)return false;return !!(e.edad||e.sexo||e.informant);}
+const startedIds=()=>IDS.filter(started);
+function nextUnanswered(id,from){const a=S.r[id],n=a.length;for(let j=0;j<n;j++){const i=(from+j)%n;if(a[i]==null)return i;}return -1;}
+const hasData=()=>IDS.some(started)||!!S.patient.name.trim();
+function snapshot(){return {app:APP_ID,version:FMT,savedAt:new Date().toISOString(),
+  progress:IDS.filter(started).map(id=>({id,answered:answered(id),total:nItems(BY[id])})),
+  state:{fmt:FMT,patient:S.patient,r:S.r,x:S.x}};}
+const timeStr=iso=>{const d=new Date(iso);if(isNaN(d))return '';const p=n=>String(n).padStart(2,'0');return 'el '+p(d.getDate())+'/'+p(d.getMonth()+1)+' a las '+p(d.getHours())+':'+p(d.getMinutes());};
+const optLabel=(x,i,v)=>{if(v==null)return 'Sin responder';const o=optsOf(x,i)[v];return x.codes||x.type==='choice'?o.c+' · '+o.l:o.l;};
+const relText=id=>S.x[id].relation==='Otros'?('Otros'+(S.x[id].other?': '+S.x[id].other:'')):(S.x[id].relation||'—');
+const areasText=id=>S.x[id].areas.length?S.x[id].areas.join(', '):'Ninguno marcado';
+const impairedText=id=>S.x[id].impaired||'Sin responder';
+/* BAARS-IV: la hoja del formulario pide, para uso del profesional, la suma por sección y el número de síntomas (ítems con 3 o 4). */
+function baarsScore(id){
+  const a=S.r[id];
+  const sec=(name,from,to,extra)=>{let s=0,c=0,sym=0;for(let i=from;i<=to;i++){const v=a[i-1];if(v!=null){s+=v+1;c++;if(v+1>=3)sym++;}}return Object.assign({name,from,to,sum:s,cnt:c,sym,size:to-from+1},extra||{});};
+  const rows=[sec('Inatención',1,9),sec('Hiperactividad',10,14),sec('Impulsividad',15,18),sec('Secciones 1 y 2',1,14,{tot:true})];
+  if(id==='ba')rows.push(sec('Tiempo cognitivo lento',19,27));
+  return {rows,anyFreq:a.some(v=>v!=null&&v+1>=3),freq:a.filter(v=>v!=null&&v+1>=3).length};
+}
+
+/* ---------- Construcción de la interfaz ---------- */
+const secOf=(x,n)=>x.sections?x.sections.find(s=>n>=s.from&&n<=s.to):null;
+function optWidth(x){if(x.type==='choice')return 0;const L=Math.max.apply(null,x.opts.map(o=>o.length));return Math.min(112,Math.max(64,Math.round(L*6.4+20)));}
+function itemsHTML(x){
+  let h='';const n=nItems(x),w=optWidth(x),longest=x.type==='scale'?Math.max.apply(null,x.opts.map(o=>o.length)):0;
+  if(x.lead)h+='<div class="lead">'+esc(x.lead)+'</div>';
+  for(let i=0;i<n;i++){
+    const num=i+1;
+    if(x.sections){const s=x.sections.find(z=>z.from===num);if(s)h+='<div class="sec-h"><span>'+s.n+'</span><small>ítems '+s.from+'–'+s.to+'</small></div>';}
+    const op=optsOf(x,i);
+    if(x.type==='choice'){
+      h+='<div class="item ch" id="'+x.id+'-'+i+'" data-q="'+x.id+'" data-i="'+i+'"><div class="n">'+num+'</div><div class="txt"><b>'+esc(itemText(x,i))+'</b></div>'+
+        '<div class="opts stack" role="radiogroup" aria-label="'+esc(itemText(x,i))+'">'+
+        op.map((o,j)=>'<button type="button" class="opt row" role="radio" aria-checked="false" data-v="'+j+'"><span class="k">'+esc(o.c)+'</span><span>'+esc(o.l)+'</span></button>').join('')+'</div></div>';
+    }else{
+      h+='<div class="item" id="'+x.id+'-'+i+'" data-q="'+x.id+'" data-i="'+i+'"><div class="n">'+num+'</div><div class="txt">'+esc(itemText(x,i))+'</div>'+
+        '<div class="opts'+(longest>14?' lg':'')+'" role="radiogroup" aria-label="Respuesta al ítem '+num+'" style="--n:'+op.length+';--w:'+w+'px">'+
+        op.map((o,j)=>'<button type="button" class="opt" role="radio" aria-checked="false" data-v="'+j+'"><span class="k">'+esc(o.c)+'</span><span>'+esc(o.l)+'</span></button>').join('')+'</div></div>';
+    }
+  }
+  return h;
+}
+function instrHTML(x){
+  let h=x.instr.map(p=>'<p>'+esc(p)+'</p>').join('');
+  if(x.lead)h+='<p>'+esc(x.lead)+'</p>';
+  if(x.examples)h+='<ul class="ex">'+x.examples.map((e,i)=>'<li><b>Ej.'+(i+1)+'</b> '+esc(e)+'</li>').join('')+'</ul>';
+  return '<details class="instr" id="'+x.id+'-instr"'+(answered(x.id)?'':' open')+'><summary>Instrucciones</summary>'+h+'</details>';
+}
+function wursHTML(x){
+  return '<div class="card inf" id="'+x.id+'-extras"><label class="fld"><span>Edad</span><input type="number" id="'+x.id+'-edad" inputmode="numeric" min="0" max="120" enterkeyhint="done" placeholder="introduzca su edad"></label>'+
+    '<div class="fld"><span>Sexo (V o M)</span><div class="chips" role="group" aria-label="Sexo">'+
+    ['V','M'].map(v=>'<button type="button" class="chip" data-act="sexo" data-q="'+x.id+'" data-v="'+v+'" aria-pressed="false">'+v+'</button>').join('')+'</div></div></div>';
+}
+function informantHTML(id){
+  return '<div class="card inf"><label class="fld"><span>Nombre de quien informa</span><input type="text" id="'+id+'-informant" autocomplete="off" autocapitalize="words" enterkeyhint="done"></label>'+
+    '<div class="fld"><span>Relación con el paciente</span><div class="chips" role="group" aria-label="Relación con el paciente">'+
+      RELS.map(r=>'<button type="button" class="chip" data-act="rel" data-q="'+id+'" data-v="'+r+'" aria-pressed="false">'+r+'</button>').join('')+'</div></div>'+
+    '<label class="fld" id="'+id+'-other-wrap" hidden><span>Especifique la relación</span><input type="text" id="'+id+'-other" autocomplete="off" enterkeyhint="done"></label></div>';
+}
+function finalHTML(id){
+  const isBA=id==='ba',n1=isBA?28:19,n2=isBA?29:20,n3=isBA?30:20;
+  const yn='<div class="fq"><p><b>'+n1+'.</b> ¿'+(isBA?'Experimenta':'Experimentaba')+' alguno de estos '+(isBA?27:18)+' síntomas al menos "Frecuentemente" o “Muy frecuentemente”?</p>'+
+    '<div class="chips">'+['No','Sí'].map(v=>'<button type="button" class="chip" data-act="yn" data-q="'+id+'" data-v="'+v+'" aria-pressed="false">'+v+'</button>').join('')+'</div>'+
+    '<p class="hint" id="'+id+'-yn-hint"></p></div>';
+  const age=isBA?'<div class="fq"><p><b>'+n2+'.</b> En caso afirmativo, ¿qué edad tenía cuando comenzaron esos síntomas?</p><label class="age">Tenía <input type="number" id="ba-onset" inputmode="numeric" min="0" max="99" enterkeyhint="done" aria-label="Edad de inicio"> años de edad.</label></div>':'';
+  const areas='<div class="fq"><p><b>'+n3+'.</b> Si es así, ¿en cuál de estos entornos esos síntomas afectaron su funcionamiento?</p><div class="checks">'+
+    AREAS.map((a,ix)=>'<label class="check"><input type="checkbox" id="'+id+'-area-'+ix+'" data-area="'+a+'" data-q="'+id+'"> '+a+'</label>').join('')+'</div></div>';
+  return '<div class="card final" id="'+id+'-final"><h3>Preguntas finales</h3>'+yn+age+areas+'</div>';
+}
+function panelHTML(x){
+  const idx=IDS.indexOf(x.id),next=INST[idx+1];
+  const codes=optsOf(x,0).map(o=>o.c),keys=x.type==='choice'?'<kbd>0</kbd>–<kbd>3</kbd> (repetí la tecla para a/b)':'<kbd>'+esc(codes[0])+'</kbd>–<kbd>'+esc(codes[codes.length-1])+'</kbd>';
+  const sub=(x.title!==x.name?esc(x.title)+' · ':'')+plural(nItems(x),x.type==='choice'?'grupo':'ítem',x.type==='choice'?'grupos':'ítems');
+  return '<div class="head"><div><h2 class="ttl">'+esc(x.name)+'</h2><p class="sub">'+sub+'<span class="sub-p" id="sub-'+x.id+'"></span></p></div>'+
+      '<div class="seg" role="group" aria-label="Forma de responder"><button type="button" data-act="view" data-v="one" aria-pressed="false">De a una</button><button type="button" data-act="view" data-v="list" aria-pressed="false">Lista</button></div></div>'+
+    instrHTML(x)+
+    (x.extra==='wurs'?wursHTML(x):'')+
+    '<div class="card one" id="one-'+x.id+'"></div>'+
+    '<div class="toolbar list-only"><label class="switch"><input type="checkbox" class="auto-t"> Pasar al siguiente al responder</label>'+
+      '<span class="kbd">Teclado: '+keys+' responde · <kbd>↑</kbd><kbd>↓</kbd> mueve · <kbd>Supr</kbd> borra · <kbd>Enter</kbd> siguiente vacío</span></div>'+
+    '<div class="card items list-only" id="items-'+x.id+'">'+itemsHTML(x)+'</div>'+
+    (x.extra==='baars'?informantHTML(x.id)+finalHTML(x.id):'')+
+    '<div class="foot">'+(next?'<button type="button" class="btn" data-act="goto" data-tab="'+next.id+'">Seguir con '+esc(next.name)+'</button>':'')+
+      '<button type="button" class="btn" data-act="goto" data-tab="res">Resumen y descargas</button></div>';
+}
+const built={};
+function ensurePanel(id){
+  if(built[id]||!BY[id])return;built[id]=true;
+  const el=document.getElementById('panel-'+id);el.innerHTML=panelHTML(BY[id]);
+  S.r[id].forEach((_,i)=>paintItem(id,i));paintExtras(id);
+  el.querySelectorAll('.auto-t').forEach(c=>{c.checked=!!S.ui.auto;});
+  paintView();updateProgress();
+}
+function build(){
+  const nav=g=>INST.filter(x=>x.group===g).map(x=>'<button type="button" class="nav-i" data-tab="'+x.id+'"><span class="nm">'+esc(x.name)+'</span><span class="c" id="nc-'+x.id+'"></span></button>').join('');
+  $('#nav').innerHTML='<div class="nav-l">Cuestionarios del Excel</div>'+nav('excel')+'<div class="nav-l sep">BAARS-IV · otro informante</div>'+nav('baars')+
+    '<div class="nav-l sep">Resultados</div><button type="button" class="nav-i" data-tab="res"><span class="nm">Resumen y descargas</span><span class="c"></span></button>';
+  $('#main').innerHTML=INST.map(x=>'<section class="panel" id="panel-'+x.id+'" hidden></section>').join('')+'<section class="panel" id="panel-res" hidden><div class="res" id="res"></div></section>';
+}
+
+/* ---------- Pintar estado ---------- */
+function paintItem(id,i){
+  const el=document.getElementById(id+'-'+i);if(!el)return;const v=S.r[id][i];
+  el.classList.toggle('done',v!=null);
+  el.querySelectorAll('.opt').forEach(b=>{const on=v!=null&&+b.dataset.v===v;b.classList.toggle('on',on);b.setAttribute('aria-checked',on?'true':'false');});
+}
+function setVal(sel,v){const el=document.getElementById(sel);if(el&&document.activeElement!==el)el.value=v||'';}
+function paintExtras(id){
+  const x=BY[id];if(!built[id]||!x.extra)return;const e=S.x[id];
+  if(x.extra==='wurs'){
+    setVal(id+'-edad',e.edad);
+    document.querySelectorAll('[data-act="sexo"][data-q="'+id+'"]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===e.sexo?'true':'false'));
+    return;
+  }
+  setVal(id+'-informant',e.informant);setVal(id+'-other',e.other);
+  document.getElementById(id+'-other-wrap').hidden=e.relation!=='Otros';
+  document.querySelectorAll('[data-act="rel"][data-q="'+id+'"]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===e.relation?'true':'false'));
+  document.querySelectorAll('[data-act="yn"][data-q="'+id+'"]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===e.impaired?'true':'false'));
+  AREAS.forEach((a,ix)=>{document.getElementById(id+'-area-'+ix).checked=e.areas.indexOf(a)>=0;});
+  if(id==='ba')setVal('ba-onset',e.onset);
+  const sc=baarsScore(id);
+  document.getElementById(id+'-yn-hint').textContent=answered(id)?('Ítems marcados con 3 o 4 hasta ahora: '+sc.freq+'.'):'';
+}
+function paintPatient(){setVal('pt-name',S.patient.name);setVal('pt-date',S.patient.date);}
+function paintFileStatus(){
+  const m=S.meta,el=$('#file-status');let t,warn=false;
+  if(!m.fileSavedAt){t=hasData()?'Todavía no guardaste un archivo de avance. El navegador guarda una copia, pero conviene tener el archivo.':'Guardá el avance en un archivo para seguir otro día o en otro dispositivo.';warn=hasData();}
+  else if(!m.changes)t='Archivo guardado '+timeStr(m.fileSavedAt)+'. Sin cambios después.';
+  else{t='Archivo guardado '+timeStr(m.fileSavedAt)+'. '+plural(m.changes,'cambio','cambios')+' sin guardar.';warn=m.changes>=10;}
+  el.textContent=t;el.classList.toggle('warn',warn);
+}
+function paintView(){
+  const one=S.ui.view==='one';
+  document.body.classList.toggle('v-one',one);
+  document.querySelectorAll('[data-act="view"]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===S.ui.view?'true':'false'));
+  IDS.forEach(id=>{if(!built[id])return;document.getElementById('one-'+id).hidden=!one;document.querySelectorAll('#panel-'+id+' .list-only').forEach(e=>{e.hidden=one;});});
+  if(one&&BY[S.ui.tab])renderOne(S.ui.tab);
+}
+function paintAll(){
+  paintPatient();
+  IDS.forEach(id=>{if(built[id]){S.r[id].forEach((_,i)=>paintItem(id,i));paintExtras(id);}});
+  document.querySelectorAll('.auto-t').forEach(c=>{c.checked=!!S.ui.auto;});
+  paintView();paintFileStatus();updateProgress();
+}
+function updateProgress(){
+  IDS.forEach(id=>{
+    const n=answered(id),t=nItems(BY[id]),done=complete(id);
+    const c=$('#nc-'+id);c.textContent=n?n+'/'+t:'';
+    document.querySelector('.nav-i[data-tab="'+id+'"]').classList.toggle('full',done);
+    const sp=document.getElementById('sub-'+id);
+    if(sp){const m=t-n,ex=extrasMissing(id);sp.innerHTML=' · <b>'+n+' de '+t+'</b> respondidos'+(m?', faltan '+m:'')+(ex.length&&started(id)?' · falta '+ex.join(' y ').toLowerCase():'');}
+  });
+  updateTop();updateDock();
+}
+function updateTop(){
+  const t=S.ui.tab,x=BY[t];
+  $('#m-title').textContent=x?x.name:'Resumen y descargas';
+  $('#m-sub').textContent=(S.patient.name.trim()||'Sin nombre')+(x?' · '+answered(t)+' de '+nItems(x):'');
+}
+function updateDock(){
+  const t=S.ui.tab,btn=$('#dock-btn'),x=BY[t];
+  if(x){
+    const n=answered(t),tot=nItems(x);
+    $('#dock-name').textContent=x.name;$('#dock-count').textContent=n+' de '+tot;
+    $('#dock-bar').style.width=(100*n/tot)+'%';
+    const ex=extrasMissing(t);
+    if(n<tot){const j=nextUnanswered(t,active[t]);btn.textContent=S.ui.view==='one'&&j===active[t]?(x.type==='choice'?'Grupo ':'Ítem ')+(j+1)+' sin responder':'Ir al '+(x.type==='choice'?'grupo ':'ítem ')+(j+1);btn.dataset.go='item';}
+    else if(ex.length){btn.textContent='Falta '+ex.join(' y ').toLowerCase();btn.dataset.go='extras';}
+    else{const nx=INST[IDS.indexOf(t)+1];if(nx){btn.textContent='Seguir con '+nx.name;btn.dataset.go=nx.id;}else{btn.textContent='Resumen y descargas';btn.dataset.go='res';}}
+  }else{
+    const st=startedIds().length,cp=IDS.filter(complete).length;
+    $('#dock-name').textContent='Cuestionarios';$('#dock-count').textContent=st+' con respuestas, '+cp+' completos';
+    $('#dock-bar').style.width=(100*cp/IDS.length)+'%';
+    btn.textContent='Guardar avance';btn.dataset.go='save';
+  }
+}
+
+/* ---------- De a una ---------- */
+function renderOne(id){
+  const el=document.getElementById('one-'+id);if(!el||el.hidden)return;
+  const x=BY[id],i=active[id],num=i+1,len=nItems(x),v=S.r[id][i],s=secOf(x,num),done=answered(id),ch=x.type==='choice';
+  el.innerHTML='<div class="one-top"><span>'+(ch?'Grupo ':'Ítem ')+num+' de '+len+(s?' · '+s.n.replace(/^Sección \d+ · /,''):'')+'</span><span>'+done+' respondidos</span></div>'+
+    '<div class="one-bar" aria-hidden="true"><i style="width:'+(100*done/len)+'%"></i></div>'+
+    '<div class="one-body'+(ch?' ch':'')+'"><div>'+(x.lead?'<p class="lead-one">'+esc(x.lead)+'</p>':'')+(ch?'<p class="lead-one">Elegí una frase del grupo</p>':'')+
+      '<p class="one-txt" id="one-txt-'+id+'">'+esc(itemText(x,i))+'</p></div><div class="one-side">'+
+    '<div class="one-opts" role="radiogroup" aria-labelledby="one-txt-'+id+'">'+
+      optsOf(x,i).map((o,j)=>'<button type="button" class="big'+(ch?' ch':'')+(v===j?' on':'')+'" role="radio" aria-checked="'+(v===j)+'" data-v="'+j+'">'+
+        (ch?'<span class="k">'+esc(o.c)+'</span><span>'+esc(o.l)+'</span>':'<span>'+esc(o.l)+'</span><span class="k">'+esc(o.c)+'</span>')+'</button>').join('')+'</div>'+
+    '<div class="one-nav"><button type="button" class="btn" data-act="prev"'+(i===0?' disabled':'')+'>Anterior</button>'+
+      '<button type="button" class="btn" data-act="next"'+(i===len-1?' disabled':'')+'>Siguiente</button></div></div></div>';
+}
+
+/* ---------- Navegación ---------- */
+function showTab(t){
+  if(!(BY[t]||t==='res'))t='scl';
+  S.ui.tab=t;save();closeMenu();
+  if(BY[t])ensurePanel(t);
+  document.querySelectorAll('.nav-i').forEach(b=>{if(b.dataset.tab===t)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');});
+  IDS.concat('res').forEach(k=>{document.getElementById('panel-'+k).hidden=k!==t;});
+  window.scrollTo(0,0);
+  if(t==='res')renderResults();else{setActive(t,active[t],false);if(S.ui.view==='one')renderOne(t);}
+  document.querySelectorAll('.panel .ttl').forEach(h=>{const want=h.closest('.panel').id==='panel-'+t?'H1':'H2';if(h.tagName!==want){const nh=document.createElement(want);nh.className='ttl';nh.innerHTML=h.innerHTML;h.replaceWith(nh);}});
+  updateTop();updateDock();
+}
+function setActive(id,i,scroll){
+  active[id]=Math.max(0,Math.min(i,nItems(BY[id])-1));i=active[id];
+  document.querySelectorAll('#items-'+id+' .item.active').forEach(e=>e.classList.remove('active'));
+  const el=document.getElementById(id+'-'+i);
+  if(el){el.classList.add('active');if(scroll&&S.ui.view!=='one')el.scrollIntoView({block:'center',behavior:RM?'auto':'smooth'});}
+  if(S.ui.view==='one'&&S.ui.tab===id)renderOne(id);
+  updateDock();
+}
+let advT=null;
+function answer(id,i,v,src){
+  const x=BY[id],len=nItems(x),before=answered(id);
+  S.r[id][i]=v;paintItem(id,i);touch();paintExtras(id);updateProgress();
+  clearTimeout(advT);
+  if(src==='cycle'){setActive(id,i,false);}
+  else if(S.ui.view==='one'){renderOne(id);if(i+1<len)advT=setTimeout(()=>{if(active[id]===i)setActive(id,i+1,false);},src==='key'?60:200);}
+  else if(src==='key')setActive(id,i+1<len?i+1:i,true);
+  else if(S.ui.auto&&i+1<len&&S.r[id][i+1]==null){setActive(id,i,false);advT=setTimeout(()=>setActive(id,i+1,true),130);}
+  else setActive(id,i,false);
+  if(before<len&&answered(id)===len){
+    const ex=extrasMissing(id);
+    toast(x.name+': todos los ítems respondidos.'+(ex.length?' Falta completar '+ex.join(' y ').toLowerCase()+'.':'')+(x.extra==='baars'?' Quedan las preguntas finales.':''));
+    const tgt=ex.length?id+'-extras':(x.extra==='baars'?id+'-final':null);
+    if(tgt)setTimeout(()=>{const f=document.getElementById(tgt);if(f)f.scrollIntoView({block:'start',behavior:RM?'auto':'smooth'});},350);
+  }
+}
+const openMenu=()=>{document.body.classList.add('menu');};
+const closeMenu=()=>{document.body.classList.remove('menu');};
+
+/* ---------- Resumen ---------- */
+function statusPill(id){const n=answered(id),t=nItems(BY[id]);if(complete(id))return '<span class="pill">Completo</span>';if(!started(id))return '<span class="pill neutral">Sin empezar</span>';return '<span class="pill warn">'+n+' de '+t+'</span>';}
+function missHTML(id){
+  if(!started(id))return '';
+  const m=missingOf(id),ex=extrasMissing(id);if(!m.length&&!ex.length)return '';
+  const lab=BY[id].type==='choice'?'grupo':'ítem';
+  let h='';
+  if(m.length)h+=(m.length>1?'Faltan '+m.length+' '+lab+'s':'Falta 1 '+lab)+': '+m.slice(0,24).map(i=>'<button type="button" class="lnk" data-act="jump" data-q="'+id+'" data-i="'+i+'">'+(i+1)+'</button>').join(' ')+(m.length>24?' …':'');
+  if(ex.length)h+=(h?' · ':'')+'Falta '+ex.join(' y ').toLowerCase();
+  return '<div class="miss">'+h+'</div>';
+}
+function renderResults(){
+  const st=startedIds(),cp=IDS.filter(complete);
+  let h='<div class="head"><div><h2 class="ttl">Resumen y descargas</h2><p class="sub">'+esc(S.patient.name||'Paciente sin nombre')+' · '+fmtDate(S.patient.date)+' · '+
+    (st.length?plural(st.length,'cuestionario','cuestionarios')+' con respuestas, '+plural(cp.length,'completo','completos'):'Todavía no hay respuestas cargadas')+'</p></div></div>';
+  const scope=st.length?'los '+plural(st.length,'cuestionario con respuestas','cuestionarios con respuestas'):'los 18 formularios en blanco';
+  h+='<section class="card rc"><div class="rc-h"><h2>Archivos</h2></div>'+
+    '<div class="dl"><div><b>Avance para continuar</b><span class="muted small">Archivo .json con todas las respuestas. Abrilo con “Abrir avance guardado” para seguir donde quedaste.</span></div>'+
+      '<div class="acts"><button type="button" class="btn pri" data-act="save-progress">Guardar avance</button><button type="button" class="btn" data-act="open-progress">Abrir avance</button></div></div>'+
+    '<div class="dl"><div><b>Todo junto (.zip)</b><span class="muted small">Excel, un PDF por cuestionario y el archivo de avance, con '+scope+'.</span></div>'+
+      '<div class="acts"><button type="button" class="btn" data-act="zip">Descargar .zip</button></div></div>'+
+    '<div class="dl"><div><b>Un solo archivo</b><span class="muted small">Excel con una hoja por cuestionario, o un PDF con todos, con '+scope+'.</span></div>'+
+      '<div class="acts"><button type="button" class="btn" data-act="xls" data-keys="all">Excel</button><button type="button" class="btn" data-act="pdf" data-keys="all">PDF</button></div></div>'+
+  '</section>';
+  h+='<section class="card rc"><div class="rc-h"><h2>Cuestionarios</h2><span class="muted small">'+plural(cp.length,'completo','completos')+' de 18</span></div><div class="ql">'+
+    INST.map(x=>'<div class="qr"><div class="qn"><button type="button" class="lnk strong" data-act="goto" data-tab="'+x.id+'">'+esc(x.name)+'</button>'+
+      '<span class="muted small">'+(x.title!==x.name?esc(x.title)+' · ':'')+answered(x.id)+' de '+nItems(x)+'</span>'+missHTML(x.id)+'</div>'+
+      statusPill(x.id)+'<div class="acts"><button type="button" class="btn sm" data-act="xls" data-keys="'+x.id+'">Excel</button><button type="button" class="btn sm" data-act="pdf" data-keys="'+x.id+'">PDF</button></div></div>').join('')+
+  '</div></section>';
+  ['bi','ba'].filter(started).forEach(id=>{
+    const b=baarsScore(id),x=BY[id];
+    h+='<section class="card rc"><div class="rc-h"><h2>'+esc(x.name)+' · para uso exclusivo del profesional</h2>'+statusPill(id)+'</div>'+
+      '<p class="muted small">Informante: '+esc(S.x[id].informant||'—')+' · Relación: '+esc(relText(id))+'</p>'+
+      '<div class="tw"><table><thead><tr><th>Sección</th><th>Ítems</th><th class="r">Puntuación total</th><th class="r">Número de síntomas</th></tr></thead><tbody>'+
+      b.rows.map(r=>'<tr class="'+(r.tot?'tot':'')+'"><td>'+r.name+'</td><td class="num">'+r.from+'–'+r.to+'</td><td class="r">'+r.sum+'</td><td class="r">'+r.sym+'</td></tr>').join('')+
+      '</tbody></table></div>'+
+      '<p class="muted small">Puntuación total: suma de los números marcados (1 a 4). Número de síntomas: ítems marcados con 3 o 4. “Secciones 1 y 2” sigue la indicación del formulario.</p>'+
+      '<div class="fa"><div><b>'+(id==='ba'?'28':'19')+'.</b> '+esc(impairedText(id))+'</div>'+
+      (id==='ba'?'<div><b>29.</b> Edad de inicio: '+esc(S.x.ba.onset?S.x.ba.onset+' años':'—')+'</div>':'')+
+      '<div><b>'+(id==='ba'?'30':'20')+'.</b> Entornos: '+esc(areasText(id))+'</div></div></section>';
+  });
+  h+='<p class="privacy">La app no calcula puntajes ni interpretaciones de los cuestionarios del Excel: exporta las respuestas marcadas. Las respuestas quedan en este navegador y en los archivos que descargues; no se envían a ningún servidor.</p>';
+  $('#res').innerHTML=h;
+}
+
+/* ---------- Modal y aviso ---------- */
+let modalOk=null;
+function ask(title,text,okLabel,fn){$('#modal-t').textContent=title;$('#modal-p').textContent=text;$('#modal-ok').textContent=okLabel;modalOk=fn;$('#modal').hidden=false;$('#modal-ok').focus();}
+function closeModal(){$('#modal').hidden=true;modalOk=null;}
+$('#modal-no').addEventListener('click',closeModal);
+$('#modal-ok').addEventListener('click',()=>{const f=modalOk;closeModal();if(f)f();});
+$('#modal').addEventListener('click',e=>{if(e.target.id==='modal')closeModal();});
+let toastT=null;
+function toast(msg,kind){const t=$('#toast');t.textContent=msg;t.className='toast'+(kind==='err'?' err':'');t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>{t.hidden=true;},kind==='err'?6000:3200);}
+
+/* ---------- Archivo de avance ---------- */
+async function saveProgress(){if(await saveFile('TDAH_avance_'+base()+'.json',JSON.stringify(snapshot(),null,1)))markSaved();}
+function markSaved(){S.meta.fileSavedAt=new Date().toISOString();S.meta.changes=0;save();paintFileStatus();}
+function pickFile(){const f=$('#file-in');f.value='';f.click();}
+const readAs=(file,kind)=>new Promise((res,rej)=>{const fr=new FileReader();fr.onload=()=>res(fr.result);fr.onerror=()=>rej(new Error('No se pudo leer el archivo.'));if(kind==='text')fr.readAsText(file);else fr.readAsArrayBuffer(file);});
+async function readProgressFile(file){
+  if((file.name||'').toLowerCase().endsWith('.xlsx')){
+    await needExcel();
+    const wb=new window.ExcelJS.Workbook();await wb.xlsx.load(await readAs(file,'buffer'));
+    const ws=wb.getWorksheet(DATA_SHEET);
+    if(!ws)throw new Error('Este Excel no tiene los datos de la app. Solo se pueden abrir los Excel descargados desde aquí.');
+    let raw='';ws.eachRow(r=>{const v=r.getCell(1).value;raw+=typeof v==='string'?v:(v&&v.richText?v.richText.map(t=>t.text).join(''):'');});
+    return JSON.parse(raw);
+  }
+  return JSON.parse(await readAs(file,'text'));
+}
+async function openProgress(file){
+  if(!file)return;
+  let obj;
+  try{obj=await readProgressFile(file);}
+  catch(err){toast(err&&err.message&&!/JSON|Unexpected|token/i.test(err.message)?err.message:'No se pudo leer el archivo. Elegí un .json de avance o un Excel descargado desde la app.','err');return;}
+  const st=normalize(obj&&obj.state?obj.state:obj);
+  if(!st){toast('El archivo no tiene respuestas de estos cuestionarios.','err');return;}
+  const ids=IDS.filter(id=>st.r[id].some(v=>v!=null));
+  const who=st.patient.name||'paciente sin nombre',when=obj&&obj.savedAt?' (guardado '+timeStr(obj.savedAt)+')':'';
+  const apply=()=>{
+    const ui=S.ui;S=st;S.ui=Object.assign({},ui);
+    S.meta={fileSavedAt:obj&&obj.savedAt||new Date().toISOString(),changes:0};
+    IDS.forEach(id=>{const j=nextUnanswered(id,0);active[id]=j<0?0:j;});
+    save();paintAll();
+    const nx=ids.find(id=>!complete(id));
+    showTab(nx||'res');
+    if(nx)setActive(nx,active[nx],true);
+    toast('Avance de '+who+' abierto: '+plural(ids.length,'cuestionario','cuestionarios')+' con respuestas.'+(nx?' Seguís en '+BY[nx].name+', '+(BY[nx].type==='choice'?'grupo ':'ítem ')+(active[nx]+1)+'.':''));
+  };
+  if(hasData())ask('Abrir el avance de '+who,'El archivo'+when+' tiene respuestas en '+plural(ids.length,'cuestionario','cuestionarios')+'. Reemplaza lo que está cargado ahora en esta pantalla.','Abrir avance',apply);
+  else apply();
+}
+$('#file-in').addEventListener('change',e=>{const f=e.target.files&&e.target.files[0];if(f)openProgress(f);});
+let dragN=0;
+const hasFiles=e=>e.dataTransfer&&Array.from(e.dataTransfer.types||[]).indexOf('Files')>=0;
+document.addEventListener('dragenter',e=>{if(hasFiles(e)){dragN++;$('#drop').hidden=false;}});
+document.addEventListener('dragleave',()=>{dragN=Math.max(0,dragN-1);if(!dragN)$('#drop').hidden=true;});
+document.addEventListener('dragover',e=>{if(hasFiles(e))e.preventDefault();});
+document.addEventListener('drop',e=>{dragN=0;$('#drop').hidden=true;const f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0];if(f){e.preventDefault();openProgress(f);}});
+
+/* ---------- Eventos ---------- */
+document.addEventListener('click',e=>{
+  const big=e.target.closest('.big');
+  if(big){const id=S.ui.tab;answer(id,active[id],+big.dataset.v,'one');return;}
+  const opt=e.target.closest('.opt');
+  if(opt){const it=opt.closest('.item');answer(it.dataset.q,+it.dataset.i,+opt.dataset.v,'click');return;}
+  const item=e.target.closest('.item');
+  if(item){setActive(item.dataset.q,+item.dataset.i,false);return;}
+  const tab=e.target.closest('[data-tab]');
+  if(tab&&!tab.dataset.act){showTab(tab.dataset.tab);return;}
+  const el=e.target.closest('[data-act]');
+  if(el)act(el.dataset.act,el);
+});
+const keysOf=v=>v==='all'?(startedIds().length?startedIds():IDS.slice()):v.split(',');
+function act(a,el){
+  const id=el.dataset.q,t=S.ui.tab;
+  if(a==='goto')showTab(el.dataset.tab);
+  else if(a==='jump'){showTab(id);setActive(id,+el.dataset.i,true);}
+  else if(a==='prev'){clearTimeout(advT);setActive(t,active[t]-1,false);}
+  else if(a==='next'){clearTimeout(advT);setActive(t,active[t]+1,false);}
+  else if(a==='view'){
+    S.ui.view=el.dataset.v;save();paintView();
+    if(BY[t]){const one=S.ui.view==='one',j=one&&S.r[t][active[t]]!=null?nextUnanswered(t,active[t]):-1;setActive(t,j>=0?j:active[t],!one);}
+  }
+  else if(a==='menu-open')openMenu();
+  else if(a==='menu-close')closeMenu();
+  else if(a==='rel'){S.x[id].relation=S.x[id].relation===el.dataset.v?'':el.dataset.v;touch();paintExtras(id);if(S.x[id].relation==='Otros')document.getElementById(id+'-other').focus();}
+  else if(a==='yn'){S.x[id].impaired=S.x[id].impaired===el.dataset.v?null:el.dataset.v;touch();paintExtras(id);}
+  else if(a==='sexo'){S.x[id].sexo=S.x[id].sexo===el.dataset.v?'':el.dataset.v;touch();paintExtras(id);updateProgress();}
+  else if(a==='new'){
+    const go=()=>{S=fresh(S.ui);IDS.forEach(k=>{active[k]=0;built[k]&&(document.getElementById('panel-'+k).innerHTML='');built[k]=false;});save();paintAll();showTab('scl');toast('Listo para un paciente nuevo');};
+    if(!hasData()){go();return;}
+    ask('Empezar con un paciente nuevo',S.meta.changes||!S.meta.fileSavedAt?'Hay respuestas que no guardaste en un archivo de avance. Si seguís, se borran de este dispositivo.':'Se borran las respuestas cargadas en este dispositivo. El archivo de avance que guardaste no cambia.','Borrar y empezar',go);
+  }
+  else if(a==='save-progress')busy(el,saveProgress);
+  else if(a==='open-progress'){closeMenu();pickFile();}
+  else if(a==='xls')busy(el,()=>exportExcel(keysOf(el.dataset.keys)));
+  else if(a==='pdf')busy(el,()=>exportPdf(keysOf(el.dataset.keys)));
+  else if(a==='zip')busy(el,exportZip);
+}
+$('#dock-btn').addEventListener('click',e=>{
+  const go=e.currentTarget.dataset.go,t=S.ui.tab;
+  if(go==='item'){const j=nextUnanswered(t,active[t]);if(j>=0)setActive(t,j,true);}
+  else if(go==='extras'){const f=document.getElementById(t+'-extras');if(f){f.scrollIntoView({block:'center',behavior:RM?'auto':'smooth'});const inp=f.querySelector('input');if(inp&&!inp.value)inp.focus();}}
+  else if(go==='save')busy(e.currentTarget,saveProgress);
+  else showTab(go);
+});
+document.addEventListener('input',e=>{
+  const t=e.target,id=t.id;let m;
+  if(id==='pt-name'){S.patient.name=t.value;paintPatient();updateTop();}
+  else if(id==='pt-date')S.patient.date=t.value;
+  else if((m=/^(bi|ba)-(informant|other)$/.exec(id)))S.x[m[1]][m[2]]=t.value;
+  else if((m=/^(wurs|wursarg)-edad$/.exec(id))){S.x[m[1]].edad=t.value;updateProgress();}
+  else if(id==='ba-onset')S.x.ba.onset=t.value;
+  else return;
+  touch();
+});
+document.addEventListener('change',e=>{
+  const t=e.target;
+  if(t.classList.contains('auto-t')){S.ui.auto=t.checked;document.querySelectorAll('.auto-t').forEach(c=>{c.checked=t.checked;});save();}
+  else if(t.dataset.area){const id=t.dataset.q,a=t.dataset.area,arr=S.x[id].areas.filter(z=>z!==a);if(t.checked)arr.push(a);S.x[id].areas=AREAS.filter(z=>arr.indexOf(z)>=0);touch();}
+});
+/* Tecla → opción: el número que se ve en el botón. En el BDI-II, repetir 1, 2 o 3 alterna entre a y b. */
+function keyToOpt(x,i,key,cur){
+  const ops=optsOf(x,i),cand=[];ops.forEach((o,j)=>{if(x.type==='choice'?o.c[0]===key:o.c===key)cand.push(j);});
+  if(!cand.length)return null;const p=cand.indexOf(cur);return {j:p>=0?cand[(p+1)%cand.length]:cand[0],multi:cand.length>1};
+}
+document.addEventListener('keydown',e=>{
+  if(!$('#modal').hidden){if(e.key==='Escape')closeModal();return;}
+  if(document.body.classList.contains('menu')){if(e.key==='Escape')closeMenu();return;}
+  const t=e.target;
+  if(t&&t.closest&&t.closest('input,textarea,select'))return;
+  if(e.ctrlKey||e.metaKey||e.altKey)return;
+  const id=S.ui.tab,x=BY[id];if(!x)return;
+  const i=active[id],one=S.ui.view==='one';
+  if(/^[0-9]$/.test(e.key)){const k=keyToOpt(x,i,e.key,S.r[id][i]);if(k){e.preventDefault();answer(id,i,k.j,k.multi?'cycle':'key');}return;}
+  if(e.key==='ArrowDown'||(one&&e.key==='ArrowRight')){e.preventDefault();clearTimeout(advT);setActive(id,i+1,true);}
+  else if(e.key==='ArrowUp'||(one&&e.key==='ArrowLeft')){e.preventDefault();clearTimeout(advT);setActive(id,i-1,true);}
+  else if(e.key==='Backspace'||e.key==='Delete'){e.preventDefault();S.r[id][i]=null;paintItem(id,i);touch();paintExtras(id);updateProgress();if(one)renderOne(id);}
+  else if(e.key==='Enter'){if(t&&t.closest&&t.closest('button,summary,a,label'))return;e.preventDefault();const j=nextUnanswered(id,i);if(j>=0)setActive(id,j,true);}
+});
+
+/* ---------- Descargas ---------- */
+const LIB={
+  excel:'https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js',
+  jspdf:'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
+  autotable:'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js',
+  zip:'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js'
+};
+const loaded={};
+function loadScript(src){
+  if(!loaded[src])loaded[src]=new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=()=>{delete loaded[src];s.remove();rej(new Error('no se pudo cargar una librería; revisá la conexión a internet'));};document.head.appendChild(s);});
+  return loaded[src];
+}
+const needExcel=()=>loadScript(LIB.excel);
+const needPdf=()=>loadScript(LIB.jspdf).then(()=>loadScript(LIB.autotable));
+const needZip=()=>loadScript(LIB.zip);
+let dlP=null;
+function getDl(){
+  if(!(window.claude&&typeof window.claude.use==='function'))return Promise.resolve(undefined);
+  if(!dlP)dlP=Promise.resolve().then(()=>window.claude.use('downloads')).catch(()=>null);
+  return dlP;
+}
+const MIME={xlsx:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',pdf:'application/pdf',zip:'application/zip',json:'application/json'};
+/* Devuelve true si el archivo se entregó para guardar. */
+async function saveFile(name,data){
+  const dl=await getDl();
+  if(dl===undefined){
+    const blob=data instanceof Blob?data:new Blob([data],{type:MIME[name.split('.').pop()]||'application/octet-stream'});
+    const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),5000);toast('Descargado: '+name);return true;
+  }
+  if(!dl){toast('Las descargas no están disponibles en esta vista. Abrí la página en el navegador o en la app de Claude actualizada.','err');return false;}
+  try{await dl.save({filename:name,data:data});toast('Guardado: '+name);return true;}
+  catch(err){const c=err&&err.code;
+    if(c==='declined')toast('Descarga cancelada');
+    else if(c==='rate_limited')toast('Ya hay una descarga esperando confirmación.','err');
+    else toast('No se pudo descargar ('+(c||'error')+').','err');
+    return false;}
+}
+async function busy(el,fn){
+  if(el.disabled)return;const html=el.innerHTML;el.disabled=true;el.setAttribute('aria-busy','true');el.textContent='Generando…';
+  try{await fn();}catch(err){console.error(err);toast('No se pudo generar el archivo: '+((err&&err.message)||err),'err');}
+  finally{el.disabled=false;el.removeAttribute('aria-busy');el.innerHTML=html;}
+}
+const base=()=>(slug(S.patient.name)||'paciente')+'_'+(S.patient.date||today());
+const fileOf=id=>slug(BY[id].name);
+function infoPairs(id){
+  const x=BY[id],p=[['Paciente',S.patient.name||'—'],['Fecha',fmtDate(S.patient.date)]];
+  if(x.extra==='wurs')p.push(['Edad',S.x[id].edad||'—'],['Sexo (V o M)',S.x[id].sexo||'—']);
+  if(x.extra==='baars')p.push(['Nombre de quien informa',S.x[id].informant||'—'],['Relación',relText(id)]);
+  return p;
+}
+function finalQs(id){
+  return id==='ba'?[
+    ['28. ¿Experimenta alguno de estos 27 síntomas al menos "Frecuentemente" o "Muy frecuentemente"?',impairedText(id)],
+    ['29. En caso afirmativo, ¿qué edad tenía cuando comenzaron esos síntomas?',S.x.ba.onset?'Tenía '+S.x.ba.onset+' años de edad.':'Sin responder'],
+    ['30. ¿En cuál de estos entornos esos síntomas afectaron su funcionamiento?',areasText(id)]
+  ]:[
+    ['19. ¿Experimentaba alguno de estos 18 síntomas al menos "Frecuentemente" o "Muy frecuentemente"?',impairedText(id)],
+    ['20. ¿En cuál de estos entornos esos síntomas afectaron su funcionamiento?',areasText(id)]
+  ];
+}
+
+/* ----- Excel ----- */
+const XC={head:'FF44546A',sec:'FFE3E8EE',x:'FFD3E5EC',line:'FFC5CCD4',acc:'FF2A5D73',crit:'FFA8261B',zebra:'FFF5F7F9',muted:'FF5A6675'};
+const thin={style:'thin',color:{argb:XC.line}};
+const BOX={top:thin,left:thin,bottom:thin,right:thin};
+function cs(c,v,o){o=o||{};c.value=v;if(o.b)c.border=BOX;if(o.font)c.font=o.font;if(o.fill)c.fill={type:'pattern',pattern:'solid',fgColor:{argb:o.fill}};c.alignment=Object.assign({vertical:'middle',wrapText:true},o.al||{});if(o.fmt)c.numFmt=o.fmt;}
+function xHead(ws,r,vals){vals.forEach((v,ix)=>{if(v==null)return;cs(ws.getCell(r,ix+1),v,{b:1,font:{bold:true,color:{argb:'FFFFFFFF'}},fill:XC.head,al:{horizontal:'center'}});});ws.getRow(r).height=32;}
+function xMerge(ws,r,c1,c2,v,font,h){ws.mergeCells(r,c1,r,c2);cs(ws.getCell(r,c1),v,{font});if(h)ws.getRow(r).height=h;}
+const PAGE={paperSize:9,orientation:'portrait',fitToPage:true,fitToWidth:1,fitToHeight:0,margins:{left:.4,right:.4,top:.5,bottom:.5,header:.2,footer:.2}};
+const sheetName=x=>x.name.replace(/[\[\]:*?\/\\]/g,'-').slice(0,31);
+function xTop(ws,x,cols){
+  xMerge(ws,1,1,cols,x.name+(x.title!==x.name?' · '+x.title:''),{bold:true,size:14},22);
+  let r=2;
+  infoPairs(x.id).forEach(p=>{ws.mergeCells(r,1,r,cols);ws.getCell(r,1).value={richText:[{font:{bold:true},text:p[0]+': '},{text:String(p[1])}]};r++;});
+  const ins=x.instr.concat(x.examples?x.examples.map((e,i)=>'Ej.'+(i+1)+' '+e):[]).join('\n');
+  xMerge(ws,r,1,cols,ins,{italic:true,size:9,color:{argb:XC.muted}},Math.min(160,16+Math.ceil(ins.length/110)*12+(ins.split('\n').length-1)*12));r++;
+  if(x.lead){xMerge(ws,r,1,cols,x.lead,{bold:true});r++;}
+  return r+1;
+}
+function xlsScale(wb,x){
+  const id=x.id,a=S.r[id],ops=optsOf(x,0),nO=ops.length,baars=x.extra==='baars';
+  const ws=wb.addWorksheet(sheetName(x),{pageSetup:PAGE});
+  const cols=2+nO+(baars?2:1);
+  ws.columns=[{width:5},{width:baars?56:52}].concat(ops.map(o=>({width:Math.max(9,Math.min(16,Math.round(o.l.length*0.75)+3))})),baars?[{width:9},{width:11}]:[{width:26}]);
+  const H=xTop(ws,x,cols);
+  xHead(ws,H,['N°','Ítem'].concat(ops.map(o=>x.codes?o.l+' ('+o.c+')':o.l),baars?['Puntaje','Síntoma (3 o 4)']:['Respuesta']));
+  ws.views=[{state:'frozen',ySplit:H}];
+  let r=H+1;const rowOf={};
+  for(let i=0;i<nItems(x);i++){
+    const n=i+1;
+    if(x.sections){const s=x.sections.find(z=>z.from===n);if(s){ws.mergeCells(r,1,r,cols);cs(ws.getCell(r,1),s.n+' (ítems '+s.from+'–'+s.to+')',{b:1,font:{bold:true},fill:XC.sec});r++;}}
+    const v=a[i],z=i%2?XC.zebra:null;rowOf[n]=r;
+    cs(ws.getCell(r,1),n,{b:1,font:{bold:true},al:{horizontal:'center'},fill:z});
+    cs(ws.getCell(r,2),itemText(x,i),{b:1,fill:z});
+    ops.forEach((o,j)=>{const on=v===j;cs(ws.getCell(r,3+j),on?'X':'',{b:1,al:{horizontal:'center'},font:on?{bold:true,color:{argb:XC.acc}}:undefined,fill:on?XC.x:z});});
+    if(baars){
+      cs(ws.getCell(r,3+nO),v==null?'Falta':v+1,{b:1,al:{horizontal:'center'},font:v==null?{italic:true,color:{argb:XC.crit}}:{bold:true},fill:z});
+      const g='C'.charCodeAt(0)+nO;const col=String.fromCharCode(g);
+      cs(ws.getCell(r,4+nO),{formula:'IF(ISNUMBER('+col+r+'),IF('+col+r+'>=3,"Sí","No"),"")',result:v==null?'':(v+1>=3?'Sí':'No')},{b:1,al:{horizontal:'center'},fill:z});
+    }else{
+      cs(ws.getCell(r,3+nO),v==null?'Falta':optLabel(x,i,v),{b:1,font:v==null?{italic:true,color:{argb:XC.crit}}:undefined,fill:z});
+    }
+    r++;
+  }
+  const ex=extrasMissing(id),miss=missingOf(id).length;
+  r++;xMerge(ws,r,1,cols,'Respondidos: '+answered(id)+' de '+nItems(x)+(miss?' · faltan '+miss:'')+(ex.length?' · falta '+ex.join(' y ').toLowerCase():''),{bold:true,color:{argb:miss||ex.length?XC.crit:'FF17202A'}});r++;
+  if(baars){
+    const b=baarsScore(id),col=String.fromCharCode('C'.charCodeAt(0)+nO);
+    r++;xMerge(ws,r,1,cols,'Para uso exclusivo del profesional',{bold:true,size:12});r++;
+    xHead(ws,r,[null,'Sección','Ítems','Puntuación total','Número de síntomas']);r++;
+    b.rows.forEach(row=>{const rg=col+rowOf[row.from]+':'+col+rowOf[row.to],f=row.tot?XC.sec:null;
+      cs(ws.getCell(r,2),row.tot?'Suma de las secciones 1 y 2':row.name,{b:1,font:{bold:true},fill:f});
+      cs(ws.getCell(r,3),row.from+'–'+row.to,{b:1,al:{horizontal:'center'},fill:f});
+      cs(ws.getCell(r,4),{formula:'SUM('+rg+')',result:row.sum},{b:1,al:{horizontal:'center'},font:{bold:true},fill:f});
+      cs(ws.getCell(r,5),{formula:'COUNTIF('+rg+',">=3")',result:row.sym},{b:1,al:{horizontal:'center'},fill:f});r++;});
+    r++;
+    finalQs(id).forEach(q=>{cs(ws.getCell(r,2),q[0],{b:1,font:{bold:true}});ws.mergeCells(r,3,r,cols);cs(ws.getCell(r,3),q[1],{b:1});ws.getRow(r).height=30;r++;});
+  }
+}
+function xlsChoice(wb,x){
+  const id=x.id,a=S.r[id];
+  const ws=wb.addWorksheet(sheetName(x),{pageSetup:PAGE});
+  ws.columns=[{width:5},{width:30},{width:9},{width:72}];
+  const H=xTop(ws,x,4);
+  xHead(ws,H,['N°','Grupo','Código','Frase elegida']);ws.views=[{state:'frozen',ySplit:H}];
+  let r=H+1;
+  for(let i=0;i<nItems(x);i++){
+    const v=a[i],o=v==null?null:optsOf(x,i)[v],z=i%2?XC.zebra:null;
+    cs(ws.getCell(r,1),i+1,{b:1,font:{bold:true},al:{horizontal:'center'},fill:z});
+    cs(ws.getCell(r,2),itemText(x,i),{b:1,font:{bold:true},fill:z});
+    cs(ws.getCell(r,3),o?o.c:'Falta',{b:1,al:{horizontal:'center'},font:o?{bold:true,color:{argb:XC.acc}}:{italic:true,color:{argb:XC.crit}},fill:o?XC.x:z});
+    cs(ws.getCell(r,4),o?o.l:'',{b:1,fill:z});r++;
+  }
+  const miss=missingOf(id).length;
+  r++;xMerge(ws,r,1,4,'Respondidos: '+answered(id)+' de '+nItems(x)+(miss?' · faltan '+miss:''),{bold:true,color:{argb:miss?XC.crit:'FF17202A'}});
+}
+function xlsResumen(wb,keys){
+  const ws=wb.addWorksheet('Resumen',{pageSetup:PAGE});
+  ws.columns=[{width:22},{width:40},{width:14},{width:12},{width:26}];
+  xMerge(ws,1,1,5,'Cuestionarios · Resumen',{bold:true,size:15},24);
+  [['Paciente',S.patient.name||'—'],['Fecha',fmtDate(S.patient.date)],['Generado',new Date().toLocaleString('es-AR')]].forEach((p,ix)=>{ws.mergeCells(2+ix,1,2+ix,5);ws.getCell(2+ix,1).value={richText:[{font:{bold:true},text:p[0]+': '},{text:p[1]}]};});
+  xHead(ws,6,['Cuestionario','Título en el Excel','Respondidos','Total','Estado']);
+  let r=7;
+  keys.forEach(id=>{const x=BY[id],n=answered(id),t=nItems(x),ex=extrasMissing(id);
+    const est=complete(id)?'Completo':(n?'Faltan '+(t-n):'Sin respuestas')+(ex.length?' · falta '+ex.join(' y ').toLowerCase():'');
+    cs(ws.getCell(r,1),x.name,{b:1,font:{bold:true}});cs(ws.getCell(r,2),x.title,{b:1});
+    cs(ws.getCell(r,3),n,{b:1,al:{horizontal:'center'}});cs(ws.getCell(r,4),t,{b:1,al:{horizontal:'center'}});
+    cs(ws.getCell(r,5),est,{b:1,font:complete(id)?undefined:{color:{argb:XC.crit}}});r++;});
+}
+async function buildXlsx(keys){
+  await needExcel();
+  const wb=new window.ExcelJS.Workbook();wb.creator='Cuestionarios TDAH';wb.created=new Date();
+  if(keys.length>1)xlsResumen(wb,keys);
+  keys.forEach(id=>{const x=BY[id];if(x.type==='choice')xlsChoice(wb,x);else xlsScale(wb,x);});
+  /* Hoja oculta con todas las respuestas, para poder reabrir este Excel en la app y seguir cargando. */
+  const ds=wb.addWorksheet(DATA_SHEET,{state:'veryHidden'});
+  const json=JSON.stringify(snapshot());
+  for(let i=0,r=1;i<json.length;i+=30000,r++)ds.getCell(r,1).value=json.slice(i,i+30000);
+  return wb.xlsx.writeBuffer();
+}
+async function exportExcel(keys){
+  const buf=await buildXlsx(keys);
+  const name=(keys.length>1?'Cuestionarios_':fileOf(keys[0])+'_')+base()+'.xlsx';
+  if(await saveFile(name,buf))markSaved();
+}
+
+/* ----- PDF ----- */
+const T=s=>String(s==null?'':s).replace(/[“”«»]/g,'"').replace(/[‘’]/g,"'").replace(/[‐‑–—]/g,'-').replace(/≥/g,'>=').replace(/…/g,'...').replace(/→/g,'->');
+const PC={head:[68,84,106],sec:[227,232,238],x:[211,229,236],acc:[42,93,115],ink:[23,32,42],muted:[90,102,117],crit:[168,38,27],zebra:[246,248,250],line:[200,206,214]};
+const M=14,W=182;
+function pdfTop(doc,x){
+  let y=17;
+  doc.setFont('helvetica','bold');doc.setFontSize(15);doc.setTextColor(...PC.ink);doc.text(T(x.name),M,y);
+  if(x.title!==x.name){y+=5.5;doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(...PC.muted);doc.text(T(x.title),M,y);}
+  y+=3;
+  const pairs=infoPairs(x.id),body=[];
+  for(let i=0;i<pairs.length;i+=2){const p=pairs[i],q=pairs[i+1]||['',''];body.push([T(p[0]+':'),T(p[1]),T(q[0]?q[0]+':':''),T(q[1])]);}
+  doc.autoTable({startY:y,body,theme:'plain',margin:{left:M,right:M},styles:{fontSize:9,cellPadding:{top:1,bottom:1,left:0,right:3},textColor:PC.ink},
+    columnStyles:{0:{fontStyle:'bold',cellWidth:42},1:{cellWidth:56},2:{fontStyle:'bold',cellWidth:26},3:{cellWidth:'auto'}}});
+  y=doc.lastAutoTable.finalY+3;
+  doc.setFont('helvetica','bold');doc.setFontSize(8.5);
+  const paras=x.instr.concat(x.lead?[x.lead]:[],x.examples?x.examples.map((e,i)=>'Ej.'+(i+1)+'  '+e):[]);
+  const lines=[];paras.forEach(p=>doc.splitTextToSize(T(p),W-8).forEach(l=>lines.push(l)));
+  const h=lines.length*3.7+5;
+  doc.setFillColor(...PC.head);doc.rect(M,y,W,h,'F');doc.setTextColor(255,255,255);doc.text(lines,M+4,y+4.6);
+  return y+h+3;
+}
+function pdfScale(doc,x){
+  const id=x.id,a=S.r[id],ops=optsOf(x,0),nO=ops.length,baars=x.extra==='baars';
+  let y=pdfTop(doc,x);
+  const cols=nO+2+(baars?1:0),body=[];
+  for(let i=0;i<nItems(x);i++){
+    const n=i+1;
+    if(x.sections){const s=x.sections.find(z=>z.from===n);if(s)body.push([{content:T(s.n),colSpan:cols,styles:{fillColor:PC.sec,fontStyle:'bold',textColor:PC.ink}}]);}
+    const v=a[i];body.push([String(n),T(itemText(x,i))].concat(ops.map((o,j)=>v===j?'X':''),baars?[v==null?'-':String(v+1)]:[]));
+  }
+  const optW=Math.min(22,Math.floor((baars?94:104)/nO));const cst={0:{cellWidth:8,halign:'center',fontStyle:'bold'},1:{cellWidth:'auto'}};
+  for(let c=0;c<nO;c++)cst[2+c]={cellWidth:optW,halign:'center'};if(baars)cst[2+nO]={cellWidth:10,halign:'center',fontStyle:'bold'};
+  doc.autoTable({startY:y,head:[['N°','Ítem'].concat(ops.map(o=>T(x.codes?o.l+' ('+o.c+')':o.l)),baars?['Pts']:[])],body,theme:'grid',margin:{left:M,right:M,bottom:16},showHead:'everyPage',
+    styles:{fontSize:8,cellPadding:1.3,lineColor:PC.line,lineWidth:.2,valign:'middle',textColor:PC.ink},
+    headStyles:{fillColor:PC.head,textColor:255,halign:'center',fontStyle:'bold',fontSize:nO>=5?6.6:7,cellPadding:{top:1.3,bottom:1.3,left:.6,right:.6}},
+    alternateRowStyles:{fillColor:PC.zebra},columnStyles:cst,
+    didParseCell:d=>{if(d.section!=='body')return;if(d.cell.raw==='X'&&d.column.index>=2){d.cell.styles.fillColor=PC.x;d.cell.styles.textColor=PC.acc;d.cell.styles.fontStyle='bold';}
+      if(baars&&d.column.index===cols-1&&d.cell.raw==='-')d.cell.styles.textColor=PC.crit;}});
+  y=doc.lastAutoTable.finalY+5;
+  y=pdfStatus(doc,id,y);
+  if(baars){
+    if(y>235){doc.addPage();y=18;}
+    doc.setFont('helvetica','bold');doc.setFontSize(11);doc.setTextColor(...PC.ink);doc.text('Para uso exclusivo del profesional',M,y);y+=2.5;
+    const b=baarsScore(id),st={fontSize:8.5,cellPadding:1.5,lineColor:PC.line,lineWidth:.2,textColor:PC.ink};
+    doc.autoTable({startY:y,theme:'grid',margin:{left:M,right:M,bottom:16},styles:st,headStyles:{fillColor:PC.head,textColor:255,fontStyle:'bold',fontSize:8},
+      head:[['Sección','Ítems','Puntuación total','Número de síntomas']],
+      body:b.rows.map(r=>[T(r.tot?'Suma de las secciones 1 y 2':r.name),r.from+'-'+r.to,String(r.sum),String(r.sym)]),
+      columnStyles:{0:{cellWidth:'auto',fontStyle:'bold'},1:{cellWidth:20,halign:'center'},2:{cellWidth:34,halign:'center',fontStyle:'bold'},3:{cellWidth:38,halign:'center'}},
+      didParseCell:d=>{if(d.section==='body'&&b.rows[d.row.index].tot)d.cell.styles.fillColor=PC.sec;}});
+    y=doc.lastAutoTable.finalY+5;
+    doc.autoTable({startY:y,theme:'grid',margin:{left:M,right:M,bottom:16},styles:st,body:finalQs(id).map(q=>[T(q[0]),T(q[1])]),columnStyles:{0:{cellWidth:112},1:{cellWidth:'auto',fontStyle:'bold'}}});
+  }
+}
+function pdfChoice(doc,x){
+  const id=x.id,a=S.r[id];
+  const y=pdfTop(doc,x),body=[];
+  for(let i=0;i<nItems(x);i++){
+    const v=a[i];
+    body.push([{content:T((i+1)+'. '+itemText(x,i)+(v==null?'  (sin responder)':'')),colSpan:3,styles:{fillColor:PC.sec,fontStyle:'bold',textColor:v==null?PC.crit:PC.ink}}]);
+    optsOf(x,i).forEach((o,j)=>body.push([o.c,T(o.l),v===j?'X':'']));
+  }
+  doc.autoTable({startY:y,head:[['Código','Frase','Marca']],body,theme:'grid',margin:{left:M,right:M,bottom:16},showHead:'everyPage',
+    styles:{fontSize:8,cellPadding:1.2,lineColor:PC.line,lineWidth:.2,valign:'middle',textColor:PC.ink},
+    headStyles:{fillColor:PC.head,textColor:255,fontStyle:'bold',fontSize:7.5},
+    columnStyles:{0:{cellWidth:14,halign:'center',fontStyle:'bold'},1:{cellWidth:'auto'},2:{cellWidth:14,halign:'center'}},
+    didParseCell:d=>{if(d.section==='body'&&d.cell.raw==='X'){d.row.cells[0].styles.fillColor=PC.x;d.row.cells[1].styles.fillColor=PC.x;d.cell.styles.fillColor=PC.x;d.cell.styles.textColor=PC.acc;d.cell.styles.fontStyle='bold';}}});
+  pdfStatus(doc,id,doc.lastAutoTable.finalY+5);
+}
+function pdfStatus(doc,id,y){
+  if(y>275){doc.addPage();y=18;}
+  const x=BY[id],m=missingOf(id),ex=extrasMissing(id);
+  const lab=x.type==='choice'?'grupos':'ítems';
+  let t='Respondidos: '+answered(id)+' de '+nItems(x)+'.';
+  if(m.length)t+=' Sin responder ('+lab+'): '+m.map(i=>i+1).join(', ')+'.';
+  if(ex.length)t+=' Falta: '+ex.join(' y ').toLowerCase()+'.';
+  doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.setTextColor(...(m.length||ex.length?PC.crit:PC.ink));
+  const lines=doc.splitTextToSize(T(t),W);doc.text(lines,M,y);
+  return y+lines.length*3.8+4;
+}
+function pdfFooter(doc){
+  const n=doc.internal.getNumberOfPages();
+  for(let p=1;p<=n;p++){doc.setPage(p);doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(...PC.muted);
+    doc.text(T('Paciente: '+(S.patient.name||'-')+' · Fecha: '+fmtDate(S.patient.date)),M,289);
+    doc.text('Página '+p+' de '+n,M+W,289,{align:'right'});}
+}
+async function buildPdf(keys){
+  await needPdf();
+  const doc=new window.jspdf.jsPDF({unit:'mm',format:'a4'});
+  doc.setProperties({title:keys.map(id=>BY[id].name).join(' + ')+' - '+(S.patient.name||'paciente')});
+  keys.forEach((id,i)=>{if(i)doc.addPage();const x=BY[id];if(x.type==='choice')pdfChoice(doc,x);else pdfScale(doc,x);});
+  pdfFooter(doc);
+  return doc.output('arraybuffer');
+}
+async function exportPdf(keys){
+  const buf=await buildPdf(keys);
+  await saveFile((keys.length>1?'Cuestionarios_':fileOf(keys[0])+'_')+base()+'.pdf',buf);
+}
+async function exportZip(){
+  await Promise.all([needZip(),needExcel(),needPdf()]);
+  const keys=keysOf('all'),zip=new window.JSZip(),b=base();
+  zip.file('Cuestionarios_'+b+'.xlsx',await buildXlsx(keys));
+  for(const id of keys)zip.file(fileOf(id)+'_'+b+'.pdf',await buildPdf([id]));
+  zip.file('TDAH_avance_'+b+'.json',JSON.stringify(snapshot(),null,1));
+  const blob=await zip.generateAsync({type:'blob'});
+  if(await saveFile('Cuestionarios_'+b+'.zip',blob))markSaved();
+}
+
+/* ---------- Inicio ---------- */
+build();
+paintAll();
+IDS.forEach(id=>{const j=nextUnanswered(id,0);active[id]=j<0?0:j;});
+showTab(S.ui.tab);
+getDl();
+})();
+</script>
+
+</body></html>
